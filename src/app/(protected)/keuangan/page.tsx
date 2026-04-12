@@ -240,12 +240,12 @@ export default async function KeuanganPage() {
             Recent Transactions
           </h2>
           <Link href="/transactions" className="text-sm text-primary hover:underline">
-            View All
+            Lihat Semua
           </Link>
         </div>
 
         {transactionsList.length === 0 ? (
-          <p className="text-center text-zinc-500 py-8">No transactions yet</p>
+          <p className="text-center text-zinc-500 py-8">Belum ada transaksi</p>
         ) : (
           <div className="space-y-3">
             {transactionsList.slice(0, 5).map((tx) => (

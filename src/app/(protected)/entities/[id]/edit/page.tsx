@@ -77,7 +77,7 @@ export default function EditEntityPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading) {
-    return <div className="p-10 pt-24">Loading...</div>;
+    return <div className="p-10 pt-24">Memuat...</div>;
   }
 
   if (!entity) {

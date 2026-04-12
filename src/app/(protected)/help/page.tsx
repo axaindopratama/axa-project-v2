@@ -81,7 +81,7 @@ export default function HelpPage() {
 
       <div className="bg-surface-container-low rounded-xl p-6">
         <h2 className="text-xl font-headline font-bold text-on-surface mb-6">
-          Quick Start Guide
+          Panduan Cepat
         </h2>
 
         <div className="space-y-4">

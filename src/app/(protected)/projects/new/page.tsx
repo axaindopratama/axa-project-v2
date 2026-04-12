@@ -184,7 +184,7 @@ export default function NewProjectPage() {
             ) : (
               <>
                 <Plus className="w-5 h-5" />
-                Create Project
+                Buat Proyek
               </>
             )}
           </button>

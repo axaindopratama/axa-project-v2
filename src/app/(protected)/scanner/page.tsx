@@ -140,10 +140,10 @@ export default function ScannerPage() {
             </div>
             <div>
               <p className="text-lg font-headline font-bold text-on-surface">
-                Drop your receipt here
+                Taruh receipt di sini
               </p>
               <p className="text-zinc-500 text-sm mt-1">
-                or choose an option below
+                atau pilih opsi di bawah
               </p>
             </div>
 
@@ -153,14 +153,14 @@ export default function ScannerPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
               >
                 <Image className="w-4 h-4" />
-                Upload Image
+                Unggah Gambar
               </button>
               <button
                 onClick={() => cameraInputRef.current?.click()}
                 className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
               >
                 <Camera className="w-4 h-4" />
-                Take Photo
+                Ambil Foto
               </button>
             </div>
 
@@ -214,7 +214,7 @@ export default function ScannerPage() {
                     onClick={handleRetake}
                     className="px-4 py-2 bg-surface-container-high rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors"
                   >
-                    Retake
+                    Ambil Ulang
                   </button>
                   <button
                     onClick={handleScan}
@@ -229,7 +229,7 @@ export default function ScannerPage() {
                     ) : (
                       <>
                         <FileText className="w-4 h-4" />
-                        Scan Receipt
+                        Pindai Receipt
                       </>
                     )}
                   </button>
@@ -240,7 +240,7 @@ export default function ScannerPage() {
 
           <div className="glass-panel rounded-xl p-6">
             <h3 className="font-headline font-bold text-on-surface mb-4">
-              Tips for best results
+              Tips untuk hasil terbaik
             </h3>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex items-center gap-2">
@@ -265,7 +265,7 @@ export default function ScannerPage() {
           <div className="bg-surface-container-low p-6 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-headline font-bold text-on-surface">
-                Verify Scan Result
+                Verifikasi Hasil Scan
               </h2>
               <button onClick={() => setShowVerify(false)} className="text-zinc-500 hover:text-zinc-300">
                 <X className="w-5 h-5" />
@@ -372,7 +372,7 @@ export default function ScannerPage() {
                 onClick={handleVerify}
                 className="flex-1 gold-gradient py-3 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all"
               >
-                Create Transaction
+                Buat Transaksi
               </button>
             </div>
           </div>

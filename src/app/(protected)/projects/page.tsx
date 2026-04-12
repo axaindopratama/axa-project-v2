@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input 
             type="text" 
-            placeholder="Search projects..." 
+            placeholder="Cari proyek..." 
             className="w-full bg-surface-container-low border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           />
         </div>
@@ -51,12 +51,12 @@ export default async function ProjectsPage() {
       {/* Projects Grid */}
       {projectsList.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-zinc-500 mb-4">No projects yet</p>
+          <p className="text-zinc-500 mb-4">Belum ada proyek</p>
           <Link 
             href="/projects/new"
             className="text-primary hover:underline"
           >
-            Create your first project
+            Buat proyek pertama
           </Link>
         </div>
       ) : (

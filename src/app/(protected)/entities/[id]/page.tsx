@@ -108,7 +108,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
               Transactions ({entityTransactions.length})
             </h2>
             {entityTransactions.length === 0 ? (
-              <p className="text-zinc-500 italic">No transactions yet</p>
+              <p className="text-zinc-500 italic">Belum ada transaksi</p>
             ) : (
               <div className="space-y-3">
                 {entityTransactions.map((tx) => (

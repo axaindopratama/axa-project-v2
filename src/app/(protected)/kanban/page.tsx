@@ -158,7 +158,7 @@ export default function KanbanPage() {
   };
 
   if (loading) {
-    return <div className="p-10 pt-24">Loading...</div>;
+    return <div className="p-10 pt-24">Memuat...</div>;
   }
 
   return (

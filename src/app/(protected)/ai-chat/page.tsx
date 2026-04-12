@@ -127,7 +127,7 @@ export default function AIChatPage() {
     <div className="p-10 pt-24 h-[calc(100vh-64px)] flex flex-col">
       <div className="mb-6">
         <h1 className="text-3xl font-headline font-bold text-on-surface">AI Smart Pilot</h1>
-        <p className="text-zinc-500 mt-1">Ask questions about your projects and finances</p>
+        <p className="text-zinc-500 mt-1">Tanyakan tentang proyek dan keuangan Anda</p>
       </div>
 
       {context && (
@@ -183,7 +183,7 @@ export default function AIChatPage() {
               <div className="bg-surface-container-high p-4 rounded-xl">
                 <div className="flex items-center gap-2 text-zinc-400">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Thinking...</span>
+                  <span className="text-sm">Memproses...</span>
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function AIChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask about your projects..."
+              placeholder="Tanyakan tentang proyek..."
               className="flex-1 bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg focus:ring-2 focus:ring-primary/40"
               disabled={loading}
             />

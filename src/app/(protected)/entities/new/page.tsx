@@ -173,7 +173,7 @@ export default function NewEntityPage() {
             disabled={loading}
             className="flex-1 gold-gradient py-3 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Entity"}
+            {loading ? "Menyimpan..." : "Buat Entitas"}
           </button>
         </div>
       </form>

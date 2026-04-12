@@ -261,7 +261,7 @@ export default function NewTransactionPage() {
             disabled={loading}
             className="flex-1 gold-gradient py-3 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Transaction"}
+            {loading ? "Menyimpan..." : "Buat Transaksi"}
           </button>
         </div>
       </form>

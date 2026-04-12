@@ -39,7 +39,7 @@ export default async function EntitiesPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input 
             type="text" 
-            placeholder="Search entities..." 
+            placeholder="Cari entitas..." 
             className="w-full bg-surface-container-low border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           />
         </div>
@@ -51,9 +51,9 @@ export default async function EntitiesPage() {
 
       {entitiesList.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-zinc-500 mb-4">No entities yet</p>
+          <p className="text-zinc-500 mb-4">Belum ada entitas</p>
           <Link href="/entities/new" className="text-primary hover:underline">
-            Create your first entity
+            Buat entitas pertama
           </Link>
         </div>
       ) : (
