@@ -74,21 +74,28 @@ export default function ScannerPage() {
       const formData = new FormData();
       formData.append("file", file);
 
+      console.log("Sending request to /api/ai/scan...");
+      
       const res = await fetch("/api/ai/scan", {
         method: "POST",
         body: formData,
       });
 
+      console.log("Response status:", res.status);
+      console.log("Response ok:", res.ok);
+
       const data = await res.json();
+      console.log("Response data:", data);
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to scan receipt");
+        throw new Error(data.error || `HTTP error: ${res.status}`);
       }
 
       setResult(data.data);
       setVerifiedData(data.data);
       setShowVerify(true);
     } catch (err: any) {
+      console.error("Scan error:", err);
       setError(err.message || "Failed to scan receipt. Please try again.");
     } finally {
       setLoading(false);
