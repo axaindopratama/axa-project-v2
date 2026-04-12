@@ -1,26 +1,133 @@
 @import "tailwindcss";
 
+@theme {
+  /* Surface Colors - The Sovereign Ledger */
+  --color-surface: #131315;
+  --color-surface-container-low: #1c1b1d;
+  --color-surface-container: #201f22;
+  --color-surface-container-high: #2a2a2c;
+  --color-surface-container-highest: #353437;
+  --color-surface-variant: #353437;
+  
+  /* Primary Colors - Gold */
+  --color-primary: #f1c97d;
+  --color-primary-container: #d4ad65;
+  --color-primary-fixed: #ffdea5;
+  --color-primary-fixed-dim: #e9c176;
+  --color-on-primary: #412d00;
+  --color-on-primary-fixed: #261900;
+  --color-on-primary-container: #5b4000;
+  --color-on-primary-fixed-variant: #5d4201;
+  
+  /* On Colors */
+  --color-on-surface: #e5e1e4;
+  --color-on-surface-variant: #d0c5af;
+  
+  /* Secondary Colors */
+  --color-secondary: #c6c5cf;
+  --color-secondary-container: #4a4b53;
+  --color-secondary-fixed: #e3e1ec;
+  --color-secondary-fixed-dim: #c6c5cf;
+  --color-on-secondary: #2f3038;
+  --color-on-secondary-container: #bcbbc5;
+  --color-on-secondary-fixed: #1a1b22;
+  --color-on-secondary-fixed-variant: #46464e;
+  
+  /* Tertiary Colors */
+  --color-tertiary: #bfcdff;
+  --color-tertiary-container: #97b0ff;
+  --color-tertiary-fixed: #dbe1ff;
+  --color-tertiary-fixed-dim: #b4c5ff;
+  --color-on-tertiary: #082b72;
+  --color-on-tertiary-container: #254188;
+  --color-on-tertiary-fixed: #00174b;
+  --color-on-tertiary-fixed-variant: #27438a;
+  
+  /* Outline Colors */
+  --color-outline: #99907c;
+  --color-outline-variant: #4d4635;
+  
+  /* Error Colors */
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+  
+  /* Inverse Colors */
+  --color-inverse-surface: #e5e1e4;
+  --color-inverse-primary: #775a19;
+  --color-inverse-on-surface: #313032;
+  
+  /* Background */
+  --color-background: #131315;
+  --color-on-background: #e5e1e4;
+  
+  /* Surface Tint */
+  --color-surface-tint: #e9c176;
+  
+  /* Border Radius */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+  
+  /* Fonts */
+  --font-headline: Manrope, sans-serif;
+  --font-body: Inter, sans-serif;
+}
+
+/* Base styles */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #131315;
+  --foreground: #e5e1e4;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Gold gradient utility */
+.gold-gradient {
+  background: linear-gradient(135deg, #f1c97d 0%, #d4ad65 100%);
+}
+
+/* Glass panel utility */
+.glass-panel {
+  background: rgba(53, 52, 55, 0.4);
+  backdrop-filter: blur(20px);
+}
+
+/* Material symbols font */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Selection style */
+::selection {
+  background-color: rgba(241, 201, 125, 0.3);
+  color: var(--color-on-surface);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-low);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
 }
