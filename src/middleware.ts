@@ -2,6 +2,14 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Allow public routes without auth check
+  const publicRoutes = ['/login', '/api/auth'];
+  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
+    return NextResponse.next();
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_ANON_KEY!,
@@ -18,16 +26,14 @@ export async function middleware(request: NextRequest) {
 
   const protectedRoutes = ['/', '/projects', '/entities', '/transactions', '/keuangan', '/kanban', '/scanner', '/ai-chat', '/settings'];
   const isProtectedRoute = protectedRoutes.some(route => 
-    request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + '/')
+    pathname === route || pathname.startsWith(route + '/')
   );
-
-  const publicRoutes = ['/login'];
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  if (user && publicRoutes.includes(request.nextUrl.pathname)) {
+  if (user && pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
