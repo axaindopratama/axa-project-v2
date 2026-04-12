@@ -9,76 +9,86 @@ export const dynamic = "force-dynamic";
 
 async function getDashboardStats() {
   const db = getDb();
+  try {
+    const allProjects = await db.select().from(projects);
+    const allTransactions = await db.select().from(transactions);
   
-  // Get all projects
-  const allProjects = await db.select().from(projects);
-  const allTransactions = await db.select().from(transactions);
-  
-  const totalProjects = allProjects.length;
-  const activeProjects = allProjects.filter(p => p.status === 'active' || p.status === 'in_progress').length;
-  
-  // Calculate total budget
-  const totalBudget = allProjects.reduce((sum, p) => sum + p.budget, 0);
-  
-  // Calculate actual spending from transactions
-  const totalSpent = allTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
-  
-  // Calculate unpaid expenses (Accounts Payable)
-  const unpaidExpenses = allTransactions
-    .filter(t => t.type === 'expense' && t.paymentStatus !== 'lunas')
-    .reduce((sum, t) => sum + (t.amount - (t.paidAmount || 0)), 0);
-  
-  // Burn rate calculation
-  const expensesByDate = allTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc: Record<string, number>, t) => {
-      const monthKey = t.date.slice(0, 7);
-      acc[monthKey] = (acc[monthKey] || 0) + t.amount;
-      return acc;
-    }, {});
-  
-  const monthsWithData = Object.keys(expensesByDate).length;
-  const avgMonthlySpend = monthsWithData > 0 ? totalSpent / monthsWithData : 0;
-  const avgDailySpend = avgMonthlySpend / 30;
-  
-  // Estimated runway (days remaining with current budget)
-  const remainingBudget = totalBudget - totalSpent;
-  const estimatedRunway = avgDailySpend > 0 ? Math.floor(remainingBudget / avgDailySpend) : 999;
-  
-  // Budget usage percentage
-  const budgetUsagePercent = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
-  
-  // Budget alerts
-  const budgetAlerts: { projectId: string; projectName: string; percentage: number; type: string }[] = [];
-  for (const project of allProjects) {
-    const projectTx = allTransactions.filter(t => t.projectId === project.id && t.type === 'expense');
-    const spent = projectTx.reduce((sum, t) => sum + t.amount, 0);
-    const usage = project.budget > 0 ? (spent / project.budget) * 100 : 0;
+    const totalProjects = allProjects.length;
+    const activeProjects = allProjects.filter(p => p.status === 'active' || p.status === 'in_progress').length;
     
-    if (usage >= 80) {
-      budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'critical' });
-    } else if (usage >= 60) {
-      budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'warning' });
+    const totalBudget = allProjects.reduce((sum, p) => sum + p.budget, 0);
+    
+    const totalSpent = allTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const unpaidExpenses = allTransactions
+      .filter(t => t.type === 'expense' && t.paymentStatus !== 'lunas')
+      .reduce((sum, t) => sum + (t.amount - (t.paidAmount || 0)), 0);
+    
+    const expensesByDate = allTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((acc: Record<string, number>, t) => {
+        const monthKey = t.date.slice(0, 7);
+        acc[monthKey] = (acc[monthKey] || 0) + t.amount;
+        return acc;
+      }, {});
+    
+    const monthsWithData = Object.keys(expensesByDate).length;
+    const avgMonthlySpend = monthsWithData > 0 ? totalSpent / monthsWithData : 0;
+    const avgDailySpend = avgMonthlySpend / 30;
+    
+    const remainingBudget = totalBudget - totalSpent;
+    const estimatedRunway = avgDailySpend > 0 ? Math.floor(remainingBudget / avgDailySpend) : 999;
+    
+    const budgetUsagePercent = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+    
+    const budgetAlerts: { projectId: string; projectName: string; percentage: number; type: string }[] = [];
+    for (const project of allProjects) {
+      const projectTx = allTransactions.filter(t => t.projectId === project.id && t.type === 'expense');
+      const spent = projectTx.reduce((sum, t) => sum + t.amount, 0);
+      const usage = project.budget > 0 ? (spent / project.budget) * 100 : 0;
+      
+      if (usage >= 80) {
+        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'critical' });
+      } else if (usage >= 60) {
+        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'warning' });
+      }
     }
+    
+    return {
+      totalProjects,
+      activeProjects,
+      totalBudget,
+      totalSpent,
+      unpaidExpenses,
+      totalRemaining: remainingBudget,
+      estimatedRunway: Math.max(0, estimatedRunway),
+      avgDailySpend: Math.round(avgDailySpend),
+      avgMonthlySpend: Math.round(avgMonthlySpend),
+      budgetUsagePercent,
+      budgetAlerts,
+      projects: allProjects,
+      monthlyExpenseData: expensesByDate,
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    return {
+      totalProjects: 0,
+      activeProjects: 0,
+      totalBudget: 0,
+      totalSpent: 0,
+      unpaidExpenses: 0,
+      totalRemaining: 0,
+      estimatedRunway: 0,
+      avgDailySpend: 0,
+      avgMonthlySpend: 0,
+      budgetUsagePercent: 0,
+      budgetAlerts: [],
+      projects: [],
+      monthlyExpenseData: {},
+    };
   }
-  
-  return {
-    totalProjects,
-    activeProjects,
-    totalBudget,
-    totalSpent,
-    unpaidExpenses,
-    totalRemaining: remainingBudget,
-    estimatedRunway: Math.max(0, estimatedRunway),
-    avgDailySpend: Math.round(avgDailySpend),
-    avgMonthlySpend: Math.round(avgMonthlySpend),
-    budgetUsagePercent,
-    budgetAlerts,
-    projects: allProjects,
-    monthlyExpenseData: expensesByDate,
-  };
 }
 
 export default async function DashboardPage() {

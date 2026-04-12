@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Plus, Search, Filter, ChevronRight } from "lucide-react";
 import { getDb } from "@/lib/db";
@@ -8,11 +8,15 @@ export const dynamic = "force-dynamic";
 
 async function getProjects() {
   const db = getDb();
-  return await db.select().from(projects);
+  try {
+    return await db.select().from(projects);
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return [];
+  }
 }
 
 export default async function ProjectsPage() {
-  revalidatePath("/projects");
   const projectsList = await getProjects();
   
   return (

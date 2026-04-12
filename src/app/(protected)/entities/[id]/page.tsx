@@ -8,13 +8,23 @@ export const dynamic = "force-dynamic";
 
 async function getEntity(id: string) {
   const db = getDb();
-  const entity = await db.select().from(entities).where(eq(entities.id, id));
-  return entity[0] || null;
+  try {
+    const entity = await db.select().from(entities).where(eq(entities.id, id));
+    return entity[0] || null;
+  } catch (error) {
+    console.error("Error fetching entity:", error);
+    return null;
+  }
 }
 
 async function getEntityTransactions(entityId: string) {
   const db = getDb();
-  return await db.select().from(transactions).where(eq(transactions.entityId, entityId));
+  try {
+    return await db.select().from(transactions).where(eq(transactions.entityId, entityId));
+  } catch (error) {
+    console.error("Error fetching entity transactions:", error);
+    return [];
+  }
 }
 
 export default async function EntityDetailPage({ params }: { params: Promise<{ id: string }> }) {

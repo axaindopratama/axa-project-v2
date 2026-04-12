@@ -8,25 +8,45 @@ export const dynamic = "force-dynamic";
 
 async function getTransaction(id: string) {
   const db = getDb();
-  const txList = await db.select().from(transactions).where(eq(transactions.id, id));
-  return txList[0] || null;
+  try {
+    const txList = await db.select().from(transactions).where(eq(transactions.id, id));
+    return txList[0] || null;
+  } catch (error) {
+    console.error("Error fetching transaction:", error);
+    return null;
+  }
 }
 
 async function getProject(id: string) {
   const db = getDb();
-  const projectList = await db.select().from(projects).where(eq(projects.id, id));
-  return projectList[0] || null;
+  try {
+    const projectList = await db.select().from(projects).where(eq(projects.id, id));
+    return projectList[0] || null;
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return null;
+  }
 }
 
 async function getEntity(id: string) {
   const db = getDb();
-  const entityList = await db.select().from(entities).where(eq(entities.id, id));
-  return entityList[0] || null;
+  try {
+    const entityList = await db.select().from(entities).where(eq(entities.id, id));
+    return entityList[0] || null;
+  } catch (error) {
+    console.error("Error fetching entity:", error);
+    return null;
+  }
 }
 
 async function getTransactionItems(txId: string) {
   const db = getDb();
-  return await db.select().from(transactionItems).where(eq(transactionItems.transactionId, txId));
+  try {
+    return await db.select().from(transactionItems).where(eq(transactionItems.transactionId, txId));
+  } catch (error) {
+    console.error("Error fetching transaction items:", error);
+    return [];
+  }
 }
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {

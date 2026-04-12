@@ -6,24 +6,38 @@ export const dynamic = "force-dynamic";
 
 async function getSystemStats() {
   const db = getDb();
-  const allProjects = await db.select().from(projects);
-  const allTransactions = await db.select().from(transactions);
-  const allEntities = await db.select().from(entities);
+  try {
+    const allProjects = await db.select().from(projects);
+    const allTransactions = await db.select().from(transactions);
+    const allEntities = await db.select().from(entities);
 
-  const totalBudget = allProjects.reduce((sum, p) => sum + p.budget, 0);
-  const totalSpent = allTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
-  const totalIncome = allTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
+    const totalBudget = allProjects.reduce((sum, p) => sum + p.budget, 0);
+    const totalSpent = allTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = allTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
 
-  return {
-    projects: allProjects.length,
-    transactions: allTransactions.length,
-    entities: allEntities.length,
-    totalBudget,
-    totalSpent,
-    totalIncome,
-    uptime: "99.9%",
-    lastSync: new Date().toISOString(),
-  };
+    return {
+      projects: allProjects.length,
+      transactions: allTransactions.length,
+      entities: allEntities.length,
+      totalBudget,
+      totalSpent,
+      totalIncome,
+      uptime: "99.9%",
+      lastSync: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error("Error fetching system stats:", error);
+    return {
+      projects: 0,
+      transactions: 0,
+      entities: 0,
+      totalBudget: 0,
+      totalSpent: 0,
+      totalIncome: 0,
+      uptime: "99.9%",
+      lastSync: new Date().toISOString(),
+    };
+  }
 }
 
 export default async function SettingsPage() {

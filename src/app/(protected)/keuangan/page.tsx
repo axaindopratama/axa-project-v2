@@ -7,44 +7,54 @@ export const dynamic = "force-dynamic";
 
 async function getTransactions() {
   const db = getDb();
-  const txList = await db.select().from(transactions);
-  const projectList = await db.select().from(projects);
-  const projectMap = new Map(projectList.map(p => [p.id, p]));
-  return txList.map(tx => ({
-    ...tx,
-    projectName: projectMap.get(tx.projectId)?.name || "Unknown",
-    budget: projectMap.get(tx.projectId)?.budget || 0,
-  }));
+  try {
+    const txList = await db.select().from(transactions);
+    const projectList = await db.select().from(projects);
+    const projectMap = new Map(projectList.map(p => [p.id, p]));
+    return txList.map(tx => ({
+      ...tx,
+      projectName: projectMap.get(tx.projectId)?.name || "Unknown",
+      budget: projectMap.get(tx.projectId)?.budget || 0,
+    }));
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
 }
 
 async function getMonthlyData() {
   const db = getDb();
-  const txList = await db.select().from(transactions);
+  try {
+    const txList = await db.select().from(transactions);
   
-  const monthlyData: Record<string, { income: number; expense: number }> = {};
-  const now = new Date();
-  
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = d.toISOString().slice(0, 7);
-    monthlyData[key] = { income: 0, expense: 0 };
-  }
-  
-  txList.forEach(tx => {
-    const month = tx.date.slice(0, 7);
-    if (monthlyData[month]) {
-      if (tx.type === "income") {
-        monthlyData[month].income += tx.amount;
-      } else {
-        monthlyData[month].expense += tx.amount;
-      }
+    const monthlyData: Record<string, { income: number; expense: number }> = {};
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toISOString().slice(0, 7);
+      monthlyData[key] = { income: 0, expense: 0 };
     }
-  });
-  
-  return Object.entries(monthlyData).map(([month, data]) => ({
-    month: new Date(month + "-01").toLocaleDateString("id-ID", { month: "short" }),
-    ...data,
-  }));
+    
+    txList.forEach(tx => {
+      const month = tx.date.slice(0, 7);
+      if (monthlyData[month]) {
+        if (tx.type === "income") {
+          monthlyData[month].income += tx.amount;
+        } else {
+          monthlyData[month].expense += tx.amount;
+        }
+      }
+    });
+    
+    return Object.entries(monthlyData).map(([month, data]) => ({
+      month: new Date(month + "-01").toLocaleDateString("id-ID", { month: "short" }),
+      ...data,
+    }));
+  } catch (error) {
+    console.error("Error fetching monthly data:", error);
+    return [];
+  }
 }
 
 export default async function KeuanganPage() {

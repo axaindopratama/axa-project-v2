@@ -10,23 +10,43 @@ export const dynamic = "force-dynamic";
 
 async function getProject(id: string) {
   const db = getDb();
-  const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-  return project[0] || null;
+  try {
+    const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+    return project[0] || null;
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    return null;
+  }
 }
 
 async function getProjectMilestones(projectId: string) {
   const db = getDb();
-  return await db.select().from(milestones).where(eq(milestones.projectId, projectId)).orderBy(sql`${milestones.percentage} ASC`);
+  try {
+    return await db.select().from(milestones).where(eq(milestones.projectId, projectId)).orderBy(sql`${milestones.percentage} ASC`);
+  } catch (error) {
+    console.error("Error fetching milestones:", error);
+    return [];
+  }
 }
 
 async function getProjectTasks(projectId: string) {
   const db = getDb();
-  return await db.select().from(tasks).where(eq(tasks.projectId, projectId));
+  try {
+    return await db.select().from(tasks).where(eq(tasks.projectId, projectId));
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return [];
+  }
 }
 
 async function getProjectTransactions(projectId: string) {
   const db = getDb();
-  return await db.select().from(transactions).where(eq(transactions.projectId, projectId)).orderBy(sql`${transactions.date} DESC`);
+  try {
+    return await db.select().from(transactions).where(eq(transactions.projectId, projectId)).orderBy(sql`${transactions.date} DESC`);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
 }
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {

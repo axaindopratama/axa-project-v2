@@ -7,18 +7,23 @@ export const dynamic = "force-dynamic";
 
 async function getTransactions() {
   const db = getDb();
-  const txList = await db.select().from(transactions);
-  const projectList = await db.select().from(projects);
-  const entityList = await db.select().from(entities);
-  
-  const projectMap = new Map(projectList.map(p => [p.id, p]));
-  const entityMap = new Map(entityList.map(e => [e.id, e]));
-  
-  return txList.map(tx => ({
-    ...tx,
-    projectName: projectMap.get(tx.projectId)?.name || "Unknown",
-    entityName: tx.entityId ? entityMap.get(tx.entityId)?.name : null,
-  }));
+  try {
+    const txList = await db.select().from(transactions);
+    const projectList = await db.select().from(projects);
+    const entityList = await db.select().from(entities);
+    
+    const projectMap = new Map(projectList.map(p => [p.id, p]));
+    const entityMap = new Map(entityList.map(e => [e.id, e]));
+    
+    return txList.map(tx => ({
+      ...tx,
+      projectName: projectMap.get(tx.projectId)?.name || "Unknown",
+      entityName: tx.entityId ? entityMap.get(tx.entityId)?.name : null,
+    }));
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    return [];
+  }
 }
 
 export default async function TransactionsPage() {

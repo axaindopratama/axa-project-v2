@@ -7,7 +7,12 @@ export const dynamic = "force-dynamic";
 
 async function getEntities() {
   const db = getDb();
-  return await db.select().from(entities);
+  try {
+    return await db.select().from(entities);
+  } catch (error) {
+    console.error("Error fetching entities:", error);
+    return [];
+  }
 }
 
 export default async function EntitiesPage() {
