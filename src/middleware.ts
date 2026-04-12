@@ -1,6 +1,13 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// TEMPORARILY DISABLED - Auth check disabled for development
+export async function middleware(request: NextRequest) {
+  // Skip all auth checks - development mode
+  return NextResponse.next();
+}
+
+/*
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -39,6 +46,7 @@ export async function middleware(request: NextRequest) {
 
   return NextResponse.next();
 }
+*/
 
 export const config = {
   matcher: [
