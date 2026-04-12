@@ -38,6 +38,13 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
+    if (!body.name || !body.type) {
+      return NextResponse.json(
+        { error: "name and type are required" },
+        { status: 400 }
+      );
+    }
+    
     const newEntity = {
       id: crypto.randomUUID(),
       name: body.name,

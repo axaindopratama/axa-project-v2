@@ -12,7 +12,7 @@ export const projects = sqliteTable('projects', {
   startDate: text('start_date'),
   endDate: text('end_date'),
   createdBy: text('created_by'),
-  createdAt: text('created_at').default(new Date().toISOString()),
+  createdAt: text('created_at'),
   updatedAt: text('updated_at'),
 });
 
@@ -50,7 +50,7 @@ export const entities = sqliteTable('entities', {
   email: text('email'),
   phone: text('phone'),
   address: text('address'),
-  createdAt: text('created_at').default(new Date().toISOString()),
+  createdAt: text('created_at'),
 });
 
 // Transactions table
@@ -68,7 +68,7 @@ export const transactions = sqliteTable('transactions', {
   paymentMethod: text('payment_method'),
   receiptUrl: text('receipt_url'),
   notes: text('notes'),
-  createdAt: text('created_at').default(new Date().toISOString()),
+  createdAt: text('created_at'),
 });
 
 // Transaction items table
@@ -98,7 +98,7 @@ export const notifications = sqliteTable('notifications', {
   title: text('title').notNull(),
   message: text('message').notNull(),
   isRead: integer('is_read', { mode: 'boolean' }).default(false),
-  createdAt: text('created_at').default(new Date().toISOString()),
+  createdAt: text('created_at'),
 });
 
 // Audit logs table
@@ -111,7 +111,7 @@ export const auditLogs = sqliteTable('audit_logs', {
   recordId: text('record_id'),
   oldValue: text('old_value'),
   newValue: text('new_value'),
-  createdAt: text('created_at').default(new Date().toISOString()),
+  createdAt: text('created_at'),
 });
 
 // Relations

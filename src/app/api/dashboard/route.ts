@@ -23,10 +23,12 @@ export async function GET() {
       }
     }
     
-    // Get total transactions
+    // Get total transactions (expense only for spent)
     const allTransactions = await db.select().from(transactions);
     for (const tx of allTransactions) {
-      totalSpent += tx.amount;
+      if (tx.type === 'expense') {
+        totalSpent += tx.amount;
+      }
     }
     
     // Get recent transactions (last 5)

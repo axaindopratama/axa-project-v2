@@ -32,22 +32,23 @@ export async function PUT(
     const db = getDb();
     const body = await req.json();
     
+    const updates: Record<string, unknown> = {};
+    if (body.projectId !== undefined) updates.projectId = body.projectId;
+    if (body.entityId !== undefined) updates.entityId = body.entityId || null;
+    if (body.date !== undefined) updates.date = body.date;
+    if (body.amount !== undefined) updates.amount = parseInt(body.amount) || body.amount;
+    if (body.type !== undefined) updates.type = body.type;
+    if (body.paymentStatus !== undefined) updates.paymentStatus = body.paymentStatus;
+    if (body.paidAmount !== undefined) updates.paidAmount = parseInt(body.paidAmount) || body.paidAmount || 0;
+    if (body.dueDate !== undefined) updates.dueDate = body.dueDate || null;
+    if (body.paidDate !== undefined) updates.paidDate = body.paidDate || null;
+    if (body.paymentMethod !== undefined) updates.paymentMethod = body.paymentMethod || null;
+    if (body.receiptUrl !== undefined) updates.receiptUrl = body.receiptUrl || null;
+    if (body.notes !== undefined) updates.notes = body.notes || null;
+    
     const updated = await db
       .update(transactions)
-      .set({
-        projectId: body.projectId,
-        entityId: body.entityId || null,
-        date: body.date,
-        amount: body.amount,
-        type: body.type,
-        paymentStatus: body.paymentStatus,
-        paidAmount: body.paidAmount || 0,
-        dueDate: body.dueDate || null,
-        paidDate: body.paidDate || null,
-        paymentMethod: body.paymentMethod || null,
-        receiptUrl: body.receiptUrl || null,
-        notes: body.notes || null,
-      })
+      .set(updates)
       .where(eq(transactions.id, id))
       .returning();
     
