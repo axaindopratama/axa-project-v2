@@ -19,10 +19,11 @@ import {
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Proyek", href: "/projects", icon: FolderOpen },
-  { name: "Keuangan", href: "/keuangan", icon: CreditCard },
+  { name: "Entitas", href: "/entities", icon: Handshake },
+  { name: "Transaksi", href: "/transactions", icon: CreditCard },
+  { name: "Keuangan", href: "/keuangan", icon: Wallet },
   { name: "Kanban", href: "/kanban", icon: Kanban },
   { name: "AI Scanner", href: "/scanner", icon: Scan },
-  { name: "Vendor/Klien", href: "/vendors", icon: Handshake },
   { name: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
