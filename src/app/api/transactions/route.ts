@@ -38,6 +38,12 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
+    console.log("Creating transaction with body:", JSON.stringify(body));
+
+    if (!body.projectId) {
+      return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+    }
+    
     const newTransaction = {
       id: crypto.randomUUID(),
       projectId: body.projectId,
@@ -55,10 +61,15 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     };
     
+    console.log("Inserting transaction:", newTransaction);
+    
     const inserted = await db.insert(transactions).values(newTransaction).returning();
+    console.log("Transaction inserted:", inserted[0].id);
     const transactionId = inserted[0].id;
 
     if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+      console.log("Inserting items:", body.items);
+      
       const itemsToInsert = body.items.map((item: any) => ({
         id: crypto.randomUUID(),
         transactionId,
@@ -69,6 +80,7 @@ export async function POST(req: NextRequest) {
       }));
 
       await db.insert(transactionItems).values(itemsToInsert);
+      console.log("Items inserted successfully");
     }
     
     revalidatePath("/transactions");
@@ -76,10 +88,10 @@ export async function POST(req: NextRequest) {
     revalidatePath("/");
     
     return NextResponse.json({ data: inserted[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating transaction:", error);
+  } catch (error: any) {
+    console.error("Error creating transaction:", error.message, error.stack);
     return NextResponse.json(
-      { error: "Failed to create transaction" },
+      { error: `Failed to create transaction: ${error.message}` },
       { status: 500 }
     );
   }
