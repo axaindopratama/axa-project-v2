@@ -16,18 +16,6 @@ export const projects = sqliteTable('projects', {
   updatedAt: text('updated_at'),
 });
 
-// Milestones table
-export const milestones = sqliteTable('milestones', {
-  id: text('id').primaryKey(),
-  projectId: text('project_id').notNull().references(() => projects.id),
-  title: text('title').notNull(),
-  amount: integer('amount').notNull(),
-  percentage: integer('percentage').notNull(),
-  dueDate: text('due_date'),
-  isPaid: integer('is_paid', { mode: 'boolean' }).default(false),
-  paidAt: text('paid_at'),
-});
-
 // Tasks table
 export const tasks = sqliteTable('tasks', {
   id: text('id').primaryKey(),
@@ -44,11 +32,11 @@ export const tasks = sqliteTable('tasks', {
   completedAt: text('completed_at'),
 });
 
-// Entities table (Vendor/Client)
+// Entities table (Vendor/Client/Employee)
 export const entities = sqliteTable('entities', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
-  type: text('type').notNull(), // 'vendor' or 'client'
+  type: text('type').notNull(), // 'vendor', 'client', or 'employee'
   contact: text('contact'),
   email: text('email'),
   phone: text('phone'),
@@ -119,16 +107,8 @@ export const auditLogs = sqliteTable('audit_logs', {
 
 // Relations
 export const projectRelations = relations(projects, ({ many }) => ({
-  milestones: many(milestones),
   tasks: many(tasks),
   transactions: many(transactions),
-}));
-
-export const milestoneRelations = relations(milestones, ({ one }) => ({
-  project: one(projects, {
-    fields: [milestones.projectId],
-    references: [projects.id],
-  }),
 }));
 
 export const taskRelations = relations(tasks, ({ one }) => ({
@@ -164,7 +144,6 @@ export const transactionItemRelations = relations(transactionItems, ({ one }) =>
 // Type exports
 export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
-export type Milestone = typeof milestones.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type Entity = typeof entities.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;

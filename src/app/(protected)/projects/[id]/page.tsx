@@ -12,17 +12,6 @@ interface Project {
   status: string;
 }
 
-interface Milestone {
-  id: string;
-  projectId: string;
-  title: string;
-  amount: number;
-  percentage: number;
-  dueDate: string | null;
-  isPaid: boolean;
-  paidAt: string | null;
-}
-
 interface Task {
   id: string;
   projectId: string;
@@ -61,28 +50,18 @@ const priorities = [
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [projectId, setProjectId] = useState<string>("");
   const [project, setProject] = useState<Project | null>(null);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [employees, setEmployees] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modal states
-  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [showDeleteMilestoneModal, setShowDeleteMilestoneModal] = useState(false);
   const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Form states
-  const [milestoneForm, setMilestoneForm] = useState({
-    title: "",
-    amount: 0,
-    percentage: 0,
-    dueDate: "",
-  });
   const [taskForm, setTaskForm] = useState({
     title: "",
     priority: "sedang",
@@ -100,22 +79,19 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   const fetchData = async (id: string) => {
     try {
-      const [projectRes, milestonesRes, tasksRes, transactionsRes, employeesRes] = await Promise.all([
+      const [projectRes, tasksRes, transactionsRes, employeesRes] = await Promise.all([
         fetch(`/api/projects/${id}`),
-        fetch(`/api/milestones?projectId=${id}`),
         fetch(`/api/tasks?projectId=${id}`),
         fetch(`/api/transactions?projectId=${id}`),
         fetch("/api/entities?type=employee"),
       ]);
 
       const projectData = await projectRes.json();
-      const milestonesData = await milestonesRes.json();
       const tasksData = await tasksRes.json();
       const transactionsData = await transactionsRes.json();
       const employeesData = await employeesRes.json();
 
       setProject(projectData.data);
-      setMilestones(milestonesData.data || []);
       setTasks(tasksData.data || []);
       setTransactions(transactionsData.data || []);
       setEmployees(employeesData.data || []);
@@ -136,88 +112,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     .filter(tx => tx.type === 'expense')
     .reduce((sum, tx) => sum + tx.amount, 0);
   const budgetUsedPercent = project ? Math.round((totalSpent / project.budget) * 100) : 0;
-
-  const handleAddMilestone = async () => {
-    if (!milestoneForm.title || milestoneForm.amount <= 0) return;
-    
-    setSaving(true);
-    try {
-      await fetch("/api/milestones", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          projectId,
-          title: milestoneForm.title,
-          amount: milestoneForm.amount,
-          percentage: milestoneForm.percentage,
-          dueDate: milestoneForm.dueDate || null,
-        }),
-      });
-
-      setShowMilestoneModal(false);
-      setMilestoneForm({ title: "", amount: 0, percentage: 0, dueDate: "" });
-      fetchData(projectId);
-    } catch (error) {
-      console.error("Error adding milestone:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleUpdateMilestone = async () => {
-    if (!selectedMilestone) return;
-    
-    setSaving(true);
-    try {
-      await fetch(`/api/milestones/${selectedMilestone.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: selectedMilestone.title,
-          amount: selectedMilestone.amount,
-          percentage: selectedMilestone.percentage,
-          dueDate: selectedMilestone.dueDate || null,
-        }),
-      });
-
-      setShowMilestoneModal(false);
-      setSelectedMilestone(null);
-      fetchData(projectId);
-    } catch (error) {
-      console.error("Error updating milestone:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleToggleMilestonePaid = async (milestone: Milestone) => {
-    try {
-      await fetch(`/api/milestones/${milestone.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPaid: !milestone.isPaid }),
-      });
-      fetchData(projectId);
-    } catch (error) {
-      console.error("Error toggling milestone:", error);
-    }
-  };
-
-  const handleDeleteMilestone = async () => {
-    if (!selectedMilestone) return;
-    
-    setSaving(true);
-    try {
-      await fetch(`/api/milestones/${selectedMilestone.id}`, { method: "DELETE" });
-      setShowDeleteMilestoneModal(false);
-      setSelectedMilestone(null);
-      fetchData(projectId);
-    } catch (error) {
-      console.error("Error deleting milestone:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleAddTask = async () => {
     if (!taskForm.title) return;
@@ -278,11 +172,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     } finally {
       setSaving(false);
     }
-  };
-
-  const openEditMilestone = (milestone: Milestone) => {
-    setSelectedMilestone({ ...milestone });
-    setShowMilestoneModal(true);
   };
 
   const formatCurrency = (amount: number) => {
@@ -399,80 +288,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
       </div>
 
-      {/* Milestones */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-headline font-bold text-on-surface">Milestones</h2>
-          <button 
-            onClick={() => {
-              setSelectedMilestone(null);
-              setShowMilestoneModal(true);
-            }}
-            className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-lg text-sm hover:bg-primary/20 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Tambah Milestone
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {milestones.length === 0 ? (
-            <p className="text-zinc-500 col-span-3">Belum ada milestone</p>
-          ) : (
-            milestones.map((milestone) => (
-              <div key={milestone.id} className={`p-4 rounded-lg border-l-4 ${
-                milestone.isPaid 
-                  ? 'bg-emerald-500/10 border-emerald-500' 
-                  : 'bg-surface-container-low border-zinc-600'
-              }`}>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h4 className="font-bold text-on-surface">{milestone.title}</h4>
-                    <p className="text-primary font-headline font-bold mt-1">
-                      {formatCurrency(milestone.amount)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => openEditMilestone(milestone)}
-                      className="p-1 text-zinc-500 hover:text-primary"
-                    >
-                      <Edit className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedMilestone(milestone);
-                        setShowDeleteMilestoneModal(true);
-                      }}
-                      className="p-1 text-zinc-500 hover:text-red-500"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-zinc-400">{milestone.percentage}%</span>
-                  {milestone.dueDate && (
-                    <span className="text-xs text-zinc-500">Due: {formatDate(milestone.dueDate)}</span>
-                  )}
-                </div>
-                
-                <button
-                  onClick={() => handleToggleMilestonePaid(milestone)}
-                  className={`w-full py-2 text-xs uppercase font-bold rounded transition-colors ${
-                    milestone.isPaid 
-                      ? 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30'
-                      : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
-                  }`}
-                >
-                  {milestone.isPaid ? 'Paid' : 'Belum Bayar'}
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
       {/* Tasks */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -547,101 +362,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           )}
         </div>
       </div>
-
-      {/* Milestone Modal */}
-      {showMilestoneModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-headline font-bold text-on-surface">
-                {selectedMilestone ? 'Edit Milestone' : 'Tambah Milestone'}
-              </h2>
-              <button onClick={() => setShowMilestoneModal(false)} className="text-zinc-500 hover:text-zinc-300">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                  Judul *
-                </label>
-                <input
-                  type="text"
-                  value={selectedMilestone ? selectedMilestone.title : milestoneForm.title}
-                  onChange={(e) => selectedMilestone 
-                    ? setSelectedMilestone({ ...selectedMilestone, title: e.target.value })
-                    : setMilestoneForm({ ...milestoneForm, title: e.target.value })
-                  }
-                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                    Jumlah (Rp) *
-                  </label>
-                  <input
-                    type="number"
-                    value={selectedMilestone ? selectedMilestone.amount : milestoneForm.amount}
-                    onChange={(e) => selectedMilestone 
-                      ? setSelectedMilestone({ ...selectedMilestone, amount: parseInt(e.target.value) || 0 })
-                      : setMilestoneForm({ ...milestoneForm, amount: parseInt(e.target.value) || 0 })
-                    }
-                    className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                    Persentase (%) *
-                  </label>
-                  <input
-                    type="number"
-                    value={selectedMilestone ? selectedMilestone.percentage : milestoneForm.percentage}
-                    onChange={(e) => selectedMilestone 
-                      ? setSelectedMilestone({ ...selectedMilestone, percentage: parseInt(e.target.value) || 0 })
-                      : setMilestoneForm({ ...milestoneForm, percentage: parseInt(e.target.value) || 0 })
-                    }
-                    className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                  Tanggal Jatuh Tempo
-                </label>
-                <input
-                  type="date"
-                  value={selectedMilestone?.dueDate || milestoneForm.dueDate}
-                  onChange={(e) => selectedMilestone 
-                    ? setSelectedMilestone({ ...selectedMilestone, dueDate: e.target.value || null })
-                    : setMilestoneForm({ ...milestoneForm, dueDate: e.target.value })
-                  }
-                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4 mt-6">
-              <button
-                onClick={() => setShowMilestoneModal(false)}
-                className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
-              >
-                Batal
-              </button>
-              <button
-                onClick={selectedMilestone ? handleUpdateMilestone : handleAddMilestone}
-                disabled={saving}
-                className="flex-1 gold-gradient py-3 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all disabled:opacity-50"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Task Modal */}
       {showTaskModal && (
@@ -740,41 +460,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 className="flex-1 gold-gradient py-3 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Milestone Modal */}
-      {showDeleteMilestoneModal && selectedMilestone && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
-              </div>
-              <div>
-                <h3 className="text-lg font-headline font-bold text-on-surface">Hapus Milestone</h3>
-                <p className="text-sm text-zinc-500">Aksi ini tidak dapat dibatalkan</p>
-              </div>
-            </div>
-            <p className="text-zinc-300 mb-6">
-              Apakah Anda yakin ingin menghapus milestone <span className="font-bold text-primary">{selectedMilestone.title}</span>?
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowDeleteMilestoneModal(false)}
-                className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 font-headline font-bold"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleDeleteMilestone}
-                disabled={saving}
-                className="flex-1 py-3 bg-red-500 rounded-lg font-headline font-bold text-white disabled:opacity-50"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Hapus'}
               </button>
             </div>
           </div>

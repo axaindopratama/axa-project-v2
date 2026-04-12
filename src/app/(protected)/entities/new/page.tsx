@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Building2, Users } from "lucide-react";
+import { ArrowLeft, Building2, Users, UserCircle } from "lucide-react";
 
 export default function NewEntityPage() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function NewEntityPage() {
             New Entity
           </h1>
           <p className="text-zinc-500 mt-1">
-            Add a new vendor or client
+            Add a new vendor, client, or employee
           </p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function NewEntityPage() {
             <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
               Type
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, type: "vendor" })}
@@ -103,6 +103,18 @@ export default function NewEntityPage() {
               >
                 <Users className="w-5 h-5" />
                 <span className="font-headline font-bold">Client</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, type: "employee" })}
+                className={`flex items-center justify-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                  formData.type === "employee"
+                    ? "border-primary bg-primary/10"
+                    : "border-transparent bg-surface-container-high text-zinc-400"
+                }`}
+              >
+                <UserCircle className="w-5 h-5" />
+                <span className="font-headline font-bold">Employee</span>
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { projects, transactions, tasks, milestones } from "@/lib/db/schema";
+import { projects, transactions, tasks } from "@/lib/db/schema";
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,13 +9,11 @@ export async function GET(req: NextRequest) {
     const allProjects = await db.select().from(projects);
     const allTransactions = await db.select().from(transactions);
     const allTasks = await db.select().from(tasks);
-    const allMilestones = await db.select().from(milestones);
     
     const summaries = await Promise.all(
       allProjects.map(async (project) => {
         const projectTxs = allTransactions.filter(t => t.projectId === project.id);
         const projectTasks = allTasks.filter(t => t.projectId === project.id);
-        const projectMilestones = allMilestones.filter(m => m.projectId === project.id);
         
         const totalSpent = projectTxs
           .filter(t => t.type === 'expense')
@@ -24,10 +22,6 @@ export async function GET(req: NextRequest) {
         const totalIncome = projectTxs
           .filter(t => t.type === 'income')
           .reduce((sum, t) => sum + t.amount, 0);
-        
-        const paidAmount = projectMilestones
-          .filter(m => m.isPaid)
-          .reduce((sum, m) => sum + m.amount, 0);
         
         const totalEstimated = projectTasks.reduce((sum, t) => sum + (t.estCost || 0), 0);
         const totalActual = projectTasks.reduce((sum, t) => sum + (t.actCost || 0), 0);
@@ -43,8 +37,6 @@ export async function GET(req: NextRequest) {
           totalBudget: project.budget,
           totalSpent,
           totalIncome,
-          paidAmount,
-          unpaidAmount: project.budget - paidAmount,
           remainingBudget,
           burnRate: avgDailySpend,
           estimatedRunway,
