@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { ChevronRight, Plus, ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { getDb } from "@/lib/db";
 import { projects, milestones, tasks, transactions } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 async function getProject(id: string) {
   const db = getDb();

@@ -4,6 +4,8 @@ import { getDb } from "@/lib/db";
 import { transactions, projects, entities, transactionItems } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 async function getTransaction(id: string) {
   const db = getDb();
   const txList = await db.select().from(transactions).where(eq(transactions.id, id));

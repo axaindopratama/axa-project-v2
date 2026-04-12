@@ -2,6 +2,8 @@ import { Settings as SettingsIcon, Database, Bell, Shield, Palette, DollarSign, 
 import { getDb } from "@/lib/db";
 import { projects, transactions, entities } from "@/lib/db/schema";
 
+export const dynamic = "force-dynamic";
+
 async function getSystemStats() {
   const db = getDb();
   const allProjects = await db.select().from(projects);

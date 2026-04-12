@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { transactions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -55,6 +56,10 @@ export async function POST(req: NextRequest) {
     };
     
     const inserted = await db.insert(transactions).values(newTransaction).returning();
+    
+    revalidatePath("/transactions");
+    revalidatePath("/keuangan");
+    revalidatePath("/");
     
     return NextResponse.json({ data: inserted[0] }, { status: 201 });
   } catch (error) {

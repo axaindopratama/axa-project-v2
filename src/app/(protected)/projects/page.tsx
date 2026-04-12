@@ -1,7 +1,10 @@
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { Plus, Search, Filter, ChevronRight } from "lucide-react";
 import { getDb } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
+
+export const dynamic = "force-dynamic";
 
 async function getProjects() {
   const db = getDb();
@@ -9,6 +12,7 @@ async function getProjects() {
 }
 
 export default async function ProjectsPage() {
+  revalidatePath("/projects");
   const projectsList = await getProjects();
   
   return (

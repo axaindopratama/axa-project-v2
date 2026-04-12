@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { entities } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
     };
     
     const inserted = await db.insert(entities).values(newEntity).returning();
+    
+    revalidatePath("/entities");
     
     return NextResponse.json({ data: inserted[0] }, { status: 201 });
   } catch (error) {

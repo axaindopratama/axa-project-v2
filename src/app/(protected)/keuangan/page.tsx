@@ -3,6 +3,8 @@ import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, TrendingDown, PieChar
 import { getDb } from "@/lib/db";
 import { transactions, projects } from "@/lib/db/schema";
 
+export const dynamic = "force-dynamic";
+
 async function getTransactions() {
   const db = getDb();
   const txList = await db.select().from(transactions);

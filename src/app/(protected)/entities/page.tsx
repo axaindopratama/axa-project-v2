@@ -3,6 +3,8 @@ import { Plus, Search, Filter, ChevronRight, Building2, Users } from "lucide-rea
 import { getDb } from "@/lib/db";
 import { entities } from "@/lib/db/schema";
 
+export const dynamic = "force-dynamic";
+
 async function getEntities() {
   const db = getDb();
   return await db.select().from(entities);

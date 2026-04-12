@@ -1,8 +1,11 @@
+import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, AlertTriangle, Clock } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getDb } from "@/lib/db";
 import { projects, transactions } from "@/lib/db/schema";
+
+export const dynamic = "force-dynamic";
 
 async function getDashboardStats() {
   const db = getDb();
