@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-import { transactions } from "@/lib/db/schema";
+import { transactions, transactionItems } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
@@ -56,6 +56,20 @@ export async function POST(req: NextRequest) {
     };
     
     const inserted = await db.insert(transactions).values(newTransaction).returning();
+    const transactionId = inserted[0].id;
+
+    if (body.items && Array.isArray(body.items) && body.items.length > 0) {
+      const itemsToInsert = body.items.map((item: any) => ({
+        id: crypto.randomUUID(),
+        transactionId,
+        description: item.description || "",
+        qty: parseInt(item.qty) || 1,
+        unitPrice: parseInt(item.unitPrice) || 0,
+        totalPrice: parseInt(item.totalPrice) || 0,
+      }));
+
+      await db.insert(transactionItems).values(itemsToInsert);
+    }
     
     revalidatePath("/transactions");
     revalidatePath("/keuangan");

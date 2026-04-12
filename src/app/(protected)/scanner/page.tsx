@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, Camera, Image, FileText, Check, X, Loader2, AlertCircle } from "lucide-react";
-import Link from "next/link";
+import { Upload, Camera, Image, FileText, Check, X, Loader2, AlertCircle, CircleCheck, CircleX } from "lucide-react";
 
 interface ScanResult {
   vendor: string;
@@ -10,6 +9,11 @@ interface ScanResult {
   items: { description: string; qty: number; unitPrice: number; totalPrice: number }[];
   total: number;
   rawText: string;
+}
+
+interface ToastMessage {
+  type: "success" | "error";
+  message: string;
 }
 
 export default function ScannerPage() {
@@ -22,6 +26,7 @@ export default function ScannerPage() {
   const [showVerify, setShowVerify] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [verifiedData, setVerifiedData] = useState<ScanResult | null>(null);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -102,8 +107,48 @@ export default function ScannerPage() {
     }
   };
 
-  const handleVerify = () => {
-    setShowVerify(false);
+  const handleVerify = async () => {
+    if (!verifiedData) return;
+
+    try {
+      const totalAmount = verifiedData.items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+      const transactionData = {
+        projectId: "default",
+        entityId: null,
+        date: verifiedData.date,
+        amount: totalAmount,
+        type: "expense",
+        paymentStatus: "lunas",
+        paidAmount: totalAmount,
+        paidDate: verifiedData.date,
+        paymentMethod: "cash",
+        notes: `Vendor: ${verifiedData.vendor}`,
+        items: verifiedData.items,
+      };
+
+      const res = await fetch("/api/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(transactionData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal membuat transaksi");
+      }
+
+      setShowVerify(false);
+      setToast({ type: "success", message: `Transaksi berhasil dibuat! Total: ${formatCurrency(totalAmount)}` });
+      
+      setTimeout(() => {
+        handleRetake();
+      }, 3000);
+    } catch (err: any) {
+      console.error("Error creating transaction:", err);
+      setToast({ type: "error", message: err.message || "Gagal membuat transaksi. Silakan coba lagi." });
+    }
   };
 
   const handleRetake = () => {
@@ -383,6 +428,20 @@ export default function ScannerPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 p-4 rounded-xl shadow-xl flex items-center gap-3 z-50 bg-surface-container-low border border-zinc-700">
+          {toast.type === "success" ? (
+            <CircleCheck className="w-6 h-6 text-emerald-500" />
+          ) : (
+            <CircleX className="w-6 h-6 text-red-500" />
+          )}
+          <span className="text-zinc-300">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 text-zinc-500 hover:text-zinc-300">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
     </div>
