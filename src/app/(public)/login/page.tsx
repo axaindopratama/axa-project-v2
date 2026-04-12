@@ -1,32 +1,48 @@
 "use client";
 
+import { createClient } from "@supabase/supabase-js";
 import { useState } from "react";
-import { Wallet, Mail, Lock, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Wallet, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Implement login with Supabase
-    setTimeout(() => {
+    setError("");
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError(authError.message);
       setLoading(false);
-    }, 2000);
+    } else {
+      router.push("/");
+    }
   };
 
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4">
-      {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Logo */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 gold-gradient rounded-2xl mb-6">
             <Wallet className="w-8 h-8 text-on-primary" />
@@ -39,14 +55,19 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login Card */}
         <div className="bg-surface-container-low rounded-2xl p-8 border border-outline-variant/10">
           <h2 className="text-xl font-headline font-bold text-on-surface text-center mb-8">
             Masuk ke Akun
           </h2>
 
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-500">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
                 Email
@@ -64,7 +85,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
                 Password
@@ -82,7 +102,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -99,7 +118,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Footer */}
           <p className="text-center text-zinc-500 text-sm mt-8">
             Tidak punya akun?{" "}
             <a href="#" className="text-primary hover:underline">
@@ -108,7 +126,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-zinc-600 text-xs mt-8">
           AXA Project © 2024. All rights reserved.
         </p>
