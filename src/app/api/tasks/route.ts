@@ -41,11 +41,21 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
+    if (!body.projectId || !body.title) {
+      return NextResponse.json(
+        { error: "projectId and title are required" },
+        { status: 400 }
+      );
+    }
+    
     const newTask = {
       id: crypto.randomUUID(),
       projectId: body.projectId,
       title: body.title,
       status: body.status || 'todo',
+      priority: body.priority || 'sedang',
+      dueDate: body.dueDate || null,
+      assignee: body.assignee || null,
       estCost: parseInt(body.estCost) || 0,
       actCost: parseInt(body.actCost) || 0,
       hours: parseFloat(body.hours) || 0,

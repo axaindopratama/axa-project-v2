@@ -34,6 +34,9 @@ export const tasks = sqliteTable('tasks', {
   projectId: text('project_id').notNull().references(() => projects.id),
   title: text('title').notNull(),
   status: text('status').notNull().default('todo'),
+  priority: text('priority').default('sedang'), // rendah, sedang, tinggi
+  dueDate: text('due_date'),
+  assignee: text('assignee'), // entity id untuk employee
   estCost: integer('est_cost').default(0),
   actCost: integer('act_cost').default(0),
   hours: real('hours').default(0),

@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
+    if (!body.projectId || !body.title || body.amount === undefined || body.percentage === undefined) {
+      return NextResponse.json(
+        { error: "projectId, title, amount, and percentage are required" },
+        { status: 400 }
+      );
+    }
+    
     const newMilestone = {
       id: crypto.randomUUID(),
       projectId: body.projectId,

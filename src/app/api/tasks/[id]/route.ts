@@ -32,14 +32,17 @@ export async function PUT(
     const db = getDb();
     const body = await req.json();
     
-    const updates: any = {};
+    const updates: Record<string, unknown> = {};
     if (body.status !== undefined) updates.status = body.status;
     if (body.title !== undefined) updates.title = body.title;
-    if (body.estCost !== undefined) updates.estCost = body.estCost;
-    if (body.actCost !== undefined) updates.actCost = body.actCost;
-    if (body.hours !== undefined) updates.hours = body.hours;
-    if (body.startedAt !== undefined) updates.startedAt = body.startedAt;
-    if (body.completedAt !== undefined) updates.completedAt = body.completedAt;
+    if (body.priority !== undefined) updates.priority = body.priority;
+    if (body.dueDate !== undefined) updates.dueDate = body.dueDate || null;
+    if (body.assignee !== undefined) updates.assignee = body.assignee || null;
+    if (body.estCost !== undefined) updates.estCost = parseInt(body.estCost) || body.estCost;
+    if (body.actCost !== undefined) updates.actCost = parseInt(body.actCost) || body.actCost;
+    if (body.hours !== undefined) updates.hours = parseFloat(body.hours) || body.hours;
+    if (body.startedAt !== undefined) updates.startedAt = body.startedAt || null;
+    if (body.completedAt !== undefined) updates.completedAt = body.completedAt || null;
     
     const updated = await db
       .update(tasks)

@@ -32,16 +32,19 @@ export async function PUT(
     const db = getDb();
     const body = await req.json();
     
+    const updates: Record<string, unknown> = {};
+    if (body.title !== undefined) updates.title = body.title;
+    if (body.amount !== undefined) updates.amount = parseInt(body.amount) || body.amount;
+    if (body.percentage !== undefined) updates.percentage = parseInt(body.percentage) || body.percentage;
+    if (body.dueDate !== undefined) updates.dueDate = body.dueDate || null;
+    if (body.isPaid !== undefined) {
+      updates.isPaid = body.isPaid;
+      updates.paidAt = body.isPaid ? new Date().toISOString() : null;
+    }
+    
     const updated = await db
       .update(milestones)
-      .set({
-        title: body.title,
-        amount: body.amount,
-        percentage: body.percentage,
-        dueDate: body.dueDate || null,
-        isPaid: body.isPaid || false,
-        paidAt: body.isPaid ? new Date().toISOString() : null,
-      })
+      .set(updates)
       .where(eq(milestones.id, id))
       .returning();
     
