@@ -1,7 +1,19 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Upload, Camera, Image, FileText, Check, X, Loader2, AlertCircle, CircleCheck, CircleX } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Upload, Camera, Image, FileText, Check, X, Loader2, AlertCircle, CircleCheck, CircleX, Plus } from "lucide-react";
+
+interface Project {
+  id: string;
+  number: string;
+  name: string;
+}
+
+interface Entity {
+  id: string;
+  name: string;
+  type: string;
+}
 
 interface ScanResult {
   vendor: string;
@@ -27,8 +39,36 @@ export default function ScannerPage() {
   const [editMode, setEditMode] = useState(false);
   const [verifiedData, setVerifiedData] = useState<ScanResult | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedEntityId, setSelectedEntityId] = useState("");
+  const [showNewEntityInput, setShowNewEntityInput] = useState(false);
+  const [newEntityName, setNewEntityName] = useState("");
+  const [isCreatingEntity, setIsCreatingEntity] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchProjectsAndEntities();
+  }, []);
+
+  const fetchProjectsAndEntities = async () => {
+    try {
+      const [projectsRes, entitiesRes] = await Promise.all([
+        fetch("/api/projects"),
+        fetch("/api/entities?type=vendor"),
+      ]);
+      const projectsData = await projectsRes.json();
+      const entitiesData = await entitiesRes.json();
+      setProjects(projectsData.data || []);
+      setEntities(entitiesData.data || []);
+    } catch (err) {
+      console.error("Error fetching projects/entities:", err);
+    }
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -79,18 +119,12 @@ export default function ScannerPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      console.log("Sending request to /api/ai/scan...");
-      
       const res = await fetch("/api/ai/scan", {
         method: "POST",
         body: formData,
       });
 
-      console.log("Response status:", res.status);
-      console.log("Response ok:", res.ok);
-
       const data = await res.json();
-      console.log("Response data:", data);
 
       if (!res.ok) {
         throw new Error(data.error || `HTTP error: ${res.status}`);
@@ -99,6 +133,18 @@ export default function ScannerPage() {
       setResult(data.data);
       setVerifiedData(data.data);
       setShowVerify(true);
+      
+      // Auto-select matching entity
+      const scannedVendor = data.data.vendor?.toLowerCase().trim() || "";
+      const matchingEntity = entities.find(
+        e => e.name.toLowerCase().trim() === scannedVendor
+      );
+      if (matchingEntity) {
+        setSelectedEntityId(matchingEntity.id);
+      } else {
+        setSelectedEntityId("");
+        setNewEntityName(data.data.vendor || "");
+      }
     } catch (err: any) {
       console.error("Scan error:", err);
       setError(err.message || "Failed to scan receipt. Please try again.");
@@ -107,15 +153,68 @@ export default function ScannerPage() {
     }
   };
 
+  const handleCreateEntity = async () => {
+    if (!newEntityName.trim()) {
+      setToast({ type: "error", message: "Nama vendor tidak boleh kosong" });
+      return;
+    }
+
+    setIsCreatingEntity(true);
+    try {
+      const res = await fetch("/api/entities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newEntityName.trim(),
+          type: "vendor",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal membuat vendor");
+      }
+
+      setEntities([...entities, data.data]);
+      setSelectedEntityId(data.data.id);
+      setShowNewEntityInput(false);
+      setToast({ type: "success", message: `Vendor "${newEntityName}" berhasil dibuat!` });
+    } catch (err: any) {
+      setToast({ type: "error", message: err.message || "Gagal membuat vendor" });
+    } finally {
+      setIsCreatingEntity(false);
+    }
+  };
+
   const handleVerify = async () => {
     if (!verifiedData) return;
+
+    // Validation
+    if (!selectedProjectId) {
+      setToast({ type: "error", message: "Silakan pilih project terlebih dahulu" });
+      return;
+    }
+
+    if (!selectedEntityId && !showNewEntityInput) {
+      setToast({ type: "error", message: "Silakan pilih vendor atau buat baru" });
+      return;
+    }
+
+    // If user wants to create new entity
+    if (showNewEntityInput && newEntityName.trim()) {
+      await handleCreateEntity();
+    }
+
+    if (!selectedEntityId) {
+      return; // Wait for entity creation
+    }
 
     try {
       const totalAmount = verifiedData.items.reduce((sum, item) => sum + item.totalPrice, 0);
 
       const transactionData = {
-        projectId: "default",
-        entityId: null,
+        projectId: selectedProjectId,
+        entityId: selectedEntityId,
         date: verifiedData.date,
         amount: totalAmount,
         type: "expense",
@@ -123,7 +222,7 @@ export default function ScannerPage() {
         paidAmount: totalAmount,
         paidDate: verifiedData.date,
         paymentMethod: "cash",
-        notes: `Vendor: ${verifiedData.vendor}`,
+        notes: `Vendor: ${entities.find(e => e.id === selectedEntityId)?.name || newEntityName}`,
         items: verifiedData.items,
       };
 
@@ -157,6 +256,10 @@ export default function ScannerPage() {
     setResult(null);
     setVerifiedData(null);
     setError(null);
+    setSelectedProjectId("");
+    setSelectedEntityId("");
+    setShowNewEntityInput(false);
+    setNewEntityName("");
   };
 
   const formatCurrency = (amount: number) => {
@@ -331,21 +434,91 @@ export default function ScannerPage() {
             )}
 
             <div className="space-y-4">
+              {/* Project Selection */}
+              <div>
+                <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">
+                  Pilih Project *
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  className="w-full bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg"
+                  required
+                >
+                  <option value="">-- Pilih Project --</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.number} - {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Vendor/Entity Selection */}
+              <div>
+                <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">
+                  Vendor/Toko *
+                </label>
+                {!showNewEntityInput ? (
+                  <div className="space-y-2">
+                    <select
+                      value={selectedEntityId}
+                      onChange={(e) => setSelectedEntityId(e.target.value)}
+                      className="w-full bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg"
+                    >
+                      <option value="">-- Pilih Vendor yang sudah tersimpan --</option>
+                      {entities.map((entity) => (
+                        <option key={entity.id} value={entity.id}>
+                          {entity.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewEntityInput(true)}
+                      className="flex items-center gap-2 text-sm text-primary hover:text-primary/80"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Buat vendor baru dari hasil scan
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newEntityName}
+                        onChange={(e) => setNewEntityName(e.target.value)}
+                        className="flex-1 bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg"
+                        placeholder="Nama vendor baru"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewEntityInput(false);
+                          setNewEntityName("");
+                        }}
+                        className="p-2 text-zinc-500 hover:text-zinc-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCreateEntity}
+                      disabled={isCreatingEntity || !newEntityName.trim()}
+                      className="text-sm text-emerald-500 hover:text-emerald-400 disabled:opacity-50"
+                    >
+                      {isCreatingEntity ? "Menyimpan..." : "Simpan vendor baru"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">
-                    Vendor
-                  </label>
-                  <input
-                    type="text"
-                    value={verifiedData.vendor}
-                    onChange={(e) => setVerifiedData({ ...verifiedData, vendor: e.target.value })}
-                    className="w-full bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">
-                    Date
+                    Tanggal
                   </label>
                   <input
                     type="date"
