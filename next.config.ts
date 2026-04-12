@@ -1,15 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable network interface detection
-  experimental: {
-    modifyNavItems: false,
-  },
-  // Force listen on localhost only  
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
+  // Next.js 16.2.3 - Turbopack is default, no config needed!
 };
 
 export default nextConfig;
