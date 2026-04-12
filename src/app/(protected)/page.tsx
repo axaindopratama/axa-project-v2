@@ -1,32 +1,80 @@
 import Link from "next/link";
-import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon } from "lucide-react";
+import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, AlertTriangle, Clock } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getDb } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
+import { projects, transactions } from "@/lib/db/schema";
 
 async function getDashboardStats() {
   const db = getDb();
   
   // Get all projects
   const allProjects = await db.select().from(projects);
+  const allTransactions = await db.select().from(transactions);
   
   const totalProjects = allProjects.length;
   const activeProjects = allProjects.filter(p => p.status === 'active' || p.status === 'in_progress').length;
   
+  // Calculate total budget
   const totalBudget = allProjects.reduce((sum, p) => sum + p.budget, 0);
   
-  // Simple stats - calculate from projects data
-  const budgetUsagePercent = totalBudget > 0 ? Math.round((totalBudget * 0.4)) : 0; // estimate
+  // Calculate actual spending from transactions
+  const totalSpent = allTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  // Calculate unpaid expenses (Accounts Payable)
+  const unpaidExpenses = allTransactions
+    .filter(t => t.type === 'expense' && t.paymentStatus !== 'lunas')
+    .reduce((sum, t) => sum + (t.amount - (t.paidAmount || 0)), 0);
+  
+  // Burn rate calculation
+  const expensesByDate = allTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((acc: Record<string, number>, t) => {
+      const monthKey = t.date.slice(0, 7);
+      acc[monthKey] = (acc[monthKey] || 0) + t.amount;
+      return acc;
+    }, {});
+  
+  const monthsWithData = Object.keys(expensesByDate).length;
+  const avgMonthlySpend = monthsWithData > 0 ? totalSpent / monthsWithData : 0;
+  const avgDailySpend = avgMonthlySpend / 30;
+  
+  // Estimated runway (days remaining with current budget)
+  const remainingBudget = totalBudget - totalSpent;
+  const estimatedRunway = avgDailySpend > 0 ? Math.floor(remainingBudget / avgDailySpend) : 999;
+  
+  // Budget usage percentage
+  const budgetUsagePercent = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+  
+  // Budget alerts
+  const budgetAlerts: { projectId: string; projectName: string; percentage: number; type: string }[] = [];
+  for (const project of allProjects) {
+    const projectTx = allTransactions.filter(t => t.projectId === project.id && t.type === 'expense');
+    const spent = projectTx.reduce((sum, t) => sum + t.amount, 0);
+    const usage = project.budget > 0 ? (spent / project.budget) * 100 : 0;
+    
+    if (usage >= 80) {
+      budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'critical' });
+    } else if (usage >= 60) {
+      budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'warning' });
+    }
+  }
   
   return {
     totalProjects,
     activeProjects,
     totalBudget,
-    totalRemaining: totalBudget - (totalBudget * 0.4),
-    estimatedRunway: 42,
-    avgDailySpend: 12500000,
+    totalSpent,
+    unpaidExpenses,
+    totalRemaining: remainingBudget,
+    estimatedRunway: Math.max(0, estimatedRunway),
+    avgDailySpend: Math.round(avgDailySpend),
+    avgMonthlySpend: Math.round(avgMonthlySpend),
     budgetUsagePercent,
+    budgetAlerts,
     projects: allProjects,
+    monthlyExpenseData: expensesByDate,
   };
 }
 
@@ -106,6 +154,37 @@ export default async function DashboardPage() {
 
         {/* Side Cards */}
         <div className="col-span-12 lg:col-span-4 space-y-8">
+          {/* Budget Alerts */}
+          {stats.budgetAlerts.length > 0 && (
+            <div className="bg-surface-container-low rounded-lg p-6 border-l-4 border-yellow-500">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                <h3 className="text-yellow-500 font-headline font-bold uppercase tracking-widest text-[10px]">
+                  Budget Alerts
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {stats.budgetAlerts.map((alert) => (
+                  <Link
+                    key={alert.projectId}
+                    href={`/projects/${alert.projectId}`}
+                    className="flex items-center justify-between p-3 bg-surface-container-high rounded hover:bg-surface-container-highest transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs text-zinc-300 font-medium">{alert.projectName}</p>
+                      <p className="text-[10px] text-zinc-500">{alert.percentage}% used</p>
+                    </div>
+                    <span className={`px-2 py-1 text-[8px] uppercase font-bold tracking-widest rounded ${
+                      alert.type === 'critical' ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'
+                    }`}>
+                      {alert.type}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Burn Rate */}
           <div className="bg-surface-container-low rounded-lg p-6">
             <h3 className="text-zinc-500 font-headline font-bold uppercase tracking-widest text-[10px] mb-6">
@@ -113,27 +192,31 @@ export default async function DashboardPage() {
             </h3>
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-error/10 flex items-center justify-center rounded-full text-error">
-                  <WalletIcon className="w-6 h-6" />
+                <div className={`w-12 h-12 flex items-center justify-center rounded-full ${
+                  stats.estimatedRunway < 30 ? 'bg-red-500/10 text-red-500' : stats.estimatedRunway < 60 ? 'bg-yellow-500/10 text-yellow-500' : 'bg-primary/10 text-primary'
+                }`}>
+                  <Clock className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
                     Estimated Runway
                   </p>
-                  <p className="text-2xl font-headline font-bold text-on-surface">
-                    {stats.estimatedRunway} Hari{" "}
+                  <p className={`text-2xl font-headline font-bold ${
+                    stats.estimatedRunway < 30 ? 'text-red-500' : stats.estimatedRunway < 60 ? 'text-yellow-500' : 'text-on-surface'
+                  }`}>
+                    {stats.estimatedRunway === 999 ? '∞' : `${stats.estimatedRunway} Hari`}{" "}
                     <span className="text-zinc-600 font-normal text-sm">Sisa</span>
                   </p>
                 </div>
               </div>
               <div className="p-4 bg-surface-container-high rounded border-l-2 border-primary/40">
                 <p className="text-xs text-zinc-400">
-                  Budget operasional akan habis padaestimasi berdasarkan spending saat ini.
+                  Berdasarkan spending {formatCurrency(stats.avgDailySpend)}/hari
                 </p>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                  <span className="text-zinc-500">Daily Spending</span>
+                  <span className="text-zinc-500">Avg Daily Spend</span>
                   <span className="text-primary">
                     {formatCurrency(stats.avgDailySpend)}
                   </span>

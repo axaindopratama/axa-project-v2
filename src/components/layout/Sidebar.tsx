@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Plus,
   Wallet,
+  Bot,
 } from "lucide-react";
 
 const navigation = [
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Keuangan", href: "/keuangan", icon: Wallet },
   { name: "Kanban", href: "/kanban", icon: Kanban },
   { name: "AI Scanner", href: "/scanner", icon: Scan },
+  { name: "AI Pilot", href: "/ai-chat", icon: Bot },
   { name: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
@@ -78,10 +80,10 @@ export function Sidebar({ className }: { className?: string }) {
 
       {/* Footer */}
       <div className="px-8 mt-auto space-y-4">
-        <button className="w-full gold-gradient text-on-primary py-3 rounded-md font-headline font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/10 transition-transform active:scale-95">
+        <Link href="/projects/new" className="w-full gold-gradient text-on-primary py-3 rounded-md font-headline font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/10 transition-transform active:scale-95 flex items-center justify-center">
           <Plus className="w-4 h-4 inline mr-2" />
           New Project
-        </button>
+        </Link>
         <Link
           href="/help"
           className="flex items-center text-zinc-500 hover:text-zinc-300 text-sm font-medium uppercase tracking-widest py-2 transition-all"
