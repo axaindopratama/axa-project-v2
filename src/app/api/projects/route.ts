@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -27,17 +27,17 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
-    // Get latest project number
-    const latest = await db
+    // Get project with MAX number (sequential - fills gaps)
+    const maxProject = await db
       .select({ number: projects.number })
       .from(projects)
-      .orderBy(desc(projects.createdAt))
+      .orderBy(sql`CAST(${projects.number} AS INTEGER) DESC`)
       .limit(1);
     
     let nextNumber = "001";
-    if (latest.length > 0) {
-      const num = parseInt(latest[0].number || "0") + 1;
-      nextNumber = num.toString().padStart(3, "0");
+    if (maxProject.length > 0) {
+      const maxNum = parseInt(maxProject[0].number || "0");
+      nextNumber = (maxNum + 1).toString().padStart(3, "0");
     }
     
     const newProject = {

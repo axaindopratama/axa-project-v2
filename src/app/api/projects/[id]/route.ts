@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { projects } from "@/lib/db/schema";
+import { projects, transactions, tasks, milestones } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET(
@@ -77,6 +77,12 @@ export async function DELETE(
     const { id } = await params;
     const db = getDb();
     
+    // Delete related data first (cascade)
+    await db.delete(transactions).where(eq(transactions.projectId, id));
+    await db.delete(tasks).where(eq(tasks.projectId, id));
+    await db.delete(milestones).where(eq(milestones.projectId, id));
+    
+    // Delete the project
     const deleted = await db
       .delete(projects)
       .where(eq(projects.id, id))

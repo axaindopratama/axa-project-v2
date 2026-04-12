@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { transactions } from "@/lib/db/schema";
+import { transactions, transactionItems } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET(
@@ -71,6 +71,10 @@ export async function DELETE(
     const { id } = await params;
     const db = getDb();
     
+    // Delete related transaction items first
+    await db.delete(transactionItems).where(eq(transactionItems.transactionId, id));
+    
+    // Delete the transaction
     const deleted = await db
       .delete(transactions)
       .where(eq(transactions.id, id))
