@@ -64,9 +64,6 @@ export default function KanbanPage() {
   const [taskForm, setTaskForm] = useState({
     projectId: "",
     title: "",
-    priority: "sedang",
-    dueDate: "",
-    assignee: "",
     estCost: 0,
   });
   const [costForm, setCostForm] = useState({ actCost: 0, hours: 0 });
@@ -171,9 +168,6 @@ export default function KanbanPage() {
         body: JSON.stringify({
           projectId: taskForm.projectId,
           title: taskForm.title,
-          priority: taskForm.priority,
-          dueDate: taskForm.dueDate || null,
-          assignee: taskForm.assignee || null,
           estCost: taskForm.estCost,
         }),
       });
@@ -181,7 +175,7 @@ export default function KanbanPage() {
       if (!res.ok) throw new Error("Failed to create task");
 
       setShowAddModal(false);
-      setTaskForm({ projectId: "", title: "", priority: "sedang", dueDate: "", assignee: "", estCost: 0 });
+      setTaskForm({ projectId: "", title: "", estCost: 0 });
       
       if (selectedProject) {
         fetchTasks(selectedProject);
@@ -577,50 +571,6 @@ export default function KanbanPage() {
                   className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
                   placeholder="Nama task..."
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                    Prioritas
-                  </label>
-                  <select
-                    value={taskForm.priority}
-                    onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
-                    className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                  >
-                    {priorities.map(p => (
-                      <option key={p.id} value={p.id}>{p.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                    Tanggal Jatuh Tempo
-                  </label>
-                  <input
-                    type="date"
-                    value={taskForm.dueDate}
-                    onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
-                    className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
-                  Penanggung Jawab (Assignee)
-                </label>
-                <select
-                  value={taskForm.assignee}
-                  onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
-                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg"
-                >
-                  <option value="">-- Pilih Karyawan --</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.name}</option>
-                  ))}
-                </select>
               </div>
 
               <div>

@@ -35,9 +35,6 @@ export async function PUT(
     const updates: Record<string, unknown> = {};
     if (body.status !== undefined) updates.status = body.status;
     if (body.title !== undefined) updates.title = body.title;
-    if (body.priority !== undefined) updates.priority = body.priority;
-    if (body.dueDate !== undefined) updates.dueDate = body.dueDate || null;
-    if (body.assignee !== undefined) updates.assignee = body.assignee || null;
     if (body.estCost !== undefined) updates.estCost = parseInt(body.estCost) || body.estCost;
     if (body.actCost !== undefined) updates.actCost = parseInt(body.actCost) || body.actCost;
     if (body.hours !== undefined) updates.hours = parseFloat(body.hours) || body.hours;
