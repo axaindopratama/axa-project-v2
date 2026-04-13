@@ -147,21 +147,8 @@ export default function ProjectsPage() {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-surface-container-low p-6 rounded-lg group hover:bg-surface-container-high transition-all duration-300 relative"
+              className="bg-surface-container-low p-6 rounded-lg group hover:bg-surface-container-high transition-all duration-300"
             >
-              {/* Delete Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteClick(project);
-                }}
-                className="absolute top-4 right-4 p-2 rounded-lg text-zinc-600 hover:text-red-500 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
-                title="Hapus proyek"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-
               <Link href={`/projects/${project.id}`}>
                 <div className="flex justify-between items-start mb-4">
                   <div>

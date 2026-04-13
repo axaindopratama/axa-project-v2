@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Plus, ArrowLeft, Edit, Trash2, X, Loader2, AlertTriangle, Check, Clock } from "lucide-react";
 
 interface Project {
@@ -48,6 +49,7 @@ const priorities = [
 ];
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
   const [projectId, setProjectId] = useState<string>("");
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -58,6 +60,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   // Modal states
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
+  const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -174,6 +177,21 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     }
   };
 
+  const handleDeleteProject = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
+      if (res.ok) {
+        setShowDeleteProjectModal(false);
+        router.push("/projects");
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
   };
@@ -245,6 +263,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <Edit className="w-4 h-4" />
             Edit
           </Link>
+          <button 
+            onClick={() => setShowDeleteProjectModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+          >
+            <Trash2 className="w-4 h-4" />
+            Hapus
+          </button>
         </div>
       </div>
 
@@ -495,6 +520,51 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 className="flex-1 py-3 bg-red-500 rounded-lg font-headline font-bold text-white disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Modal */}
+      {showDeleteProjectModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-headline font-bold text-on-surface">Hapus Proyek</h3>
+                <p className="text-sm text-zinc-500">Aksi ini tidak dapat dibatalkan</p>
+              </div>
+            </div>
+            <p className="text-zinc-300 mb-6">
+              Apakah Anda yakin ingin menghapus proyek <span className="font-bold text-primary">{project?.number} - {project?.name}</span>? Semua data terkait (transactions, tasks) juga akan dihapus.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowDeleteProjectModal(false)}
+                className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDeleteProject}
+                disabled={saving}
+                className="flex-1 py-3 bg-red-500 rounded-lg font-headline font-bold text-white hover:bg-red-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Menghapus...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Hapus
+                  </>
+                )}
               </button>
             </div>
           </div>
