@@ -42,6 +42,12 @@ export async function PUT(req: NextRequest) {
     if (type === "user") {
       const { id, name, email, phone, avatar } = body;
       
+      if (!name || !name.trim()) {
+        return NextResponse.json({ error: "Nama wajib diisi" }, { status: 400 });
+      }
+      if (!email || !email.trim()) {
+        return NextResponse.json({ error: "Email wajib diisi" }, { status: 400 });
+      }
       if (!id) {
         return NextResponse.json({ error: "ID pengguna diperlukan" }, { status: 400 });
       }
@@ -98,6 +104,10 @@ export async function PUT(req: NextRequest) {
     if (type === "company") {
       const { id, companyName, companyAddress, companyPhone, companyEmail, companyNpwp, logo } = body;
       
+      if (!companyName || !companyName.trim()) {
+        return NextResponse.json({ error: "Nama perusahaan wajib diisi" }, { status: 400 });
+      }
+
       const existing = await db.select().from(companySettings).limit(1);
 
       let result;

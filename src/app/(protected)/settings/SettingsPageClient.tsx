@@ -76,6 +76,11 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   };
 
   const handleSaveCompany = async () => {
+    if (!companyData.companyName?.trim()) {
+      showToast("error", "Nama perusahaan wajib diisi!");
+      return;
+    }
+    
     setSavingCompany(true);
     try {
       const res = await fetch("/api/settings?type=company", {
@@ -99,6 +104,15 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   };
 
   const handleSaveProfile = async () => {
+    if (!userData.name?.trim()) {
+      showToast("error", "Nama wajib diisi!");
+      return;
+    }
+    if (!userData.email?.trim()) {
+      showToast("error", "Email wajib diisi!");
+      return;
+    }
+    
     setSavingProfile(true);
     try {
       const res = await fetch("/api/settings?type=user", {
