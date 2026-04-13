@@ -89,6 +89,32 @@ export const notifications = sqliteTable('notifications', {
   createdAt: text('created_at'),
 });
 
+// Users table
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  supabaseUserId: text('supabase_user_id').notNull().unique(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  role: text('role').notNull().default('user'),
+  avatar: text('avatar'),
+  phone: text('phone'),
+  createdAt: text('created_at'),
+  updatedAt: text('updated_at'),
+});
+
+// Company settings table
+export const companySettings = sqliteTable('company_settings', {
+  id: text('id').primaryKey(),
+  companyName: text('company_name'),
+  companyAddress: text('company_address'),
+  companyPhone: text('company_phone'),
+  companyEmail: text('company_email'),
+  companyNpwp: text('company_npwp'),
+  logo: text('logo'),
+  createdAt: text('created_at'),
+  updatedAt: text('updated_at'),
+});
+
 // Audit logs table
 export const auditLogs = sqliteTable('audit_logs', {
   id: text('id').primaryKey(),
@@ -145,3 +171,5 @@ export type Task = typeof tasks.$inferSelect;
 export type Entity = typeof entities.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type TransactionItem = typeof transactionItems.$inferSelect;
+export type User = typeof users.$inferSelect;
+export type CompanySettings = typeof companySettings.$inferSelect;
