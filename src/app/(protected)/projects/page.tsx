@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, ChevronRight, Trash2, X, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Search, Filter, ChevronRight, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Skeleton, SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
+import { EmptyState, EmptyProjects } from "@/components/ui/EmptyState";
+import { ErrorState, ErrorCard } from "@/components/ui/ErrorState";
 
 interface Project {
   id: string;
@@ -18,6 +21,7 @@ interface Project {
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -29,11 +33,15 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/projects");
+      if (!res.ok) throw new Error("Gagal memuat data proyek");
       const data = await res.json();
       setProjects(data.data || []);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching projects:", err);
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -86,8 +94,34 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="p-10 pt-24 space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-5 w-48" />
+          </div>
+          <Skeleton className="h-12 w-40" />
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-12 flex-1 max-w-md" />
+          <Skeleton className="h-12 w-24" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-10 pt-24 space-y-8">
+        <ErrorState 
+          message={error} 
+          action={{ label: "Coba Lagi", onClick: fetchProjects }} 
+        />
       </div>
     );
   }
@@ -133,15 +167,13 @@ export default function ProjectsPage() {
 
       {/* Projects Grid */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-zinc-500 mb-4">Belum ada proyek</p>
-          <Link 
-            href="/projects/new"
-            className="text-primary hover:underline"
-          >
-            Buat proyek pertama
-          </Link>
-        </div>
+        searchQuery ? (
+          <ErrorState 
+            message="Tidak ada proyek yang cocok dengan pencarian Anda" 
+          />
+        ) : (
+          <EmptyProjects />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (

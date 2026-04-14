@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Search, Filter, ArrowUpRight, ArrowDownRight, ChevronRight, Trash2, X, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Search, Filter, ArrowUpRight, ArrowDownRight, ChevronRight, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Skeleton, SkeletonTableRow } from "@/components/ui/Skeleton";
+import { EmptyState, EmptyTransactions } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 interface Transaction {
   id: string;
@@ -31,6 +34,7 @@ interface Entity {
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -42,10 +46,11 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/transactions");
+      if (!res.ok) throw new Error("Gagal memuat data transaksi");
       const data = await res.json();
       
-      // Also fetch projects and entities for mapping
       const [projectsRes, entitiesRes] = await Promise.all([
         fetch("/api/projects"),
         fetch("/api/entities"),
@@ -64,8 +69,10 @@ export default function TransactionsPage() {
       }));
       
       setTransactions(enrichedTransactions);
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
@@ -120,8 +127,57 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="p-10 pt-24 space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-32 mb-2" />
+            <Skeleton className="h-5 w-48" />
+          </div>
+          <Skeleton className="h-12 w-40" />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-surface-container-low p-4 rounded-lg">
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-4">
+          <Skeleton className="h-12 flex-1 max-w-md" />
+          <Skeleton className="h-12 w-24" />
+        </div>
+        <div className="bg-surface-container-low rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-surface-container-highest">
+                <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Date</th>
+                <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Type</th>
+                <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Project</th>
+                <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Entity</th>
+                <th className="text-right text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Amount</th>
+                <th className="text-right text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Status</th>
+                <th className="p-4 w-20"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonTableRow key={i} columns={7} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-10 pt-24 space-y-8">
+        <ErrorState 
+          message={error} 
+          action={{ label: "Coba Lagi", onClick: fetchTransactions }} 
+        />
       </div>
     );
   }
@@ -193,12 +249,11 @@ export default function TransactionsPage() {
       </div>
 
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-zinc-500 mb-4">Belum ada transaksi</p>
-            <Link href="/transactions/new" className="text-primary hover:underline">
-              Buat transaksi pertama
-            </Link>
-        </div>
+        searchQuery ? (
+          <ErrorState message="Tidak ada transaksi yang cocok dengan pencarian Anda" />
+        ) : (
+          <EmptyTransactions />
+        )
       ) : (
         <div className="bg-surface-container-low rounded-lg overflow-hidden">
           <table className="w-full">

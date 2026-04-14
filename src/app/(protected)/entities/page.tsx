@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Plus, Search, Filter, ChevronRight, Building2, Users, UserCircle } from "lucide-react";
 import { getDb } from "@/lib/db";
 import { entities } from "@/lib/db/schema";
+import { Suspense } from "react";
+import { SkeletonCard } from "@/components/ui/Skeleton";
+import { EmptyState, EmptyEntities } from "@/components/ui/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +18,141 @@ async function getEntities() {
   }
 }
 
-export default async function EntitiesPage() {
+async function EntitiesList() {
   const entitiesList = await getEntities();
   
   const vendors = entitiesList.filter(e => e.type === 'vendor');
   const clients = entitiesList.filter(e => e.type === 'client');
   const employees = entitiesList.filter(e => e.type === 'employee');
   
+  if (entitiesList.length === 0) {
+    return <EmptyEntities />;
+  }
+
+  return (
+    <div className="space-y-8">
+      {vendors.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Building2 className="w-5 h-5 text-zinc-500" />
+            <h2 className="text-lg font-headline font-bold text-on-surface">
+              Vendors ({vendors.length})
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {vendors.map((entity) => (
+              <Link
+                key={entity.id}
+                href={`/entities/${entity.id}`}
+                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                      {entity.name}
+                    </h3>
+                    {entity.contact && (
+                      <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
+                    )}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
+                </div>
+                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
+                  {entity.email && <span>{entity.email}</span>}
+                  {entity.phone && <span>{entity.phone}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {clients.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-5 h-5 text-zinc-500" />
+            <h2 className="text-lg font-headline font-bold text-on-surface">
+              Clients ({clients.length})
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {clients.map((entity) => (
+              <Link
+                key={entity.id}
+                href={`/entities/${entity.id}`}
+                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                      {entity.name}
+                    </h3>
+                    {entity.contact && (
+                      <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
+                    )}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
+                </div>
+                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
+                  {entity.email && <span>{entity.email}</span>}
+                  {entity.phone && <span>{entity.phone}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {employees.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <UserCircle className="w-5 h-5 text-zinc-500" />
+            <h2 className="text-lg font-headline font-bold text-on-surface">
+              Employees ({employees.length})
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {employees.map((entity) => (
+              <Link
+                key={entity.id}
+                href={`/entities/${entity.id}`}
+                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                      {entity.name}
+                    </h3>
+                    {entity.contact && (
+                      <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
+                    )}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
+                </div>
+                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
+                  {entity.email && <span>{entity.email}</span>}
+                  {entity.phone && <span>{entity.phone}</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EntitiesLoading() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
+}
+
+export default function EntitiesPage() {
   return (
     <div className="p-10 pt-24 space-y-8">
       <div className="flex items-center justify-between">
@@ -57,124 +188,9 @@ export default async function EntitiesPage() {
         </button>
       </div>
 
-      {entitiesList.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-zinc-500 mb-4">Belum ada entitas</p>
-          <Link href="/entities/new" className="text-primary hover:underline">
-            Buat entitas pertama
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {vendors.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Building2 className="w-5 h-5 text-zinc-500" />
-                <h2 className="text-lg font-headline font-bold text-on-surface">
-                  Vendors ({vendors.length})
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {vendors.map((entity) => (
-                  <Link
-                    key={entity.id}
-                    href={`/entities/${entity.id}`}
-                    className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-headline font-bold text-on-surface">
-                          {entity.name}
-                        </h3>
-                        {entity.contact && (
-                          <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
-                        )}
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                      {entity.email && <span>{entity.email}</span>}
-                      {entity.phone && <span>{entity.phone}</span>}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {clients.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-zinc-500" />
-                <h2 className="text-lg font-headline font-bold text-on-surface">
-                  Clients ({clients.length})
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {clients.map((entity) => (
-                  <Link
-                    key={entity.id}
-                    href={`/entities/${entity.id}`}
-                    className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-headline font-bold text-on-surface">
-                          {entity.name}
-                        </h3>
-                        {entity.contact && (
-                          <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
-                        )}
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                      {entity.email && <span>{entity.email}</span>}
-                      {entity.phone && <span>{entity.phone}</span>}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {employees.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <UserCircle className="w-5 h-5 text-zinc-500" />
-                <h2 className="text-lg font-headline font-bold text-on-surface">
-                  Employees ({employees.length})
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {employees.map((entity) => (
-                  <Link
-                    key={entity.id}
-                    href={`/entities/${entity.id}`}
-                    className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-headline font-bold text-on-surface">
-                          {entity.name}
-                        </h3>
-                        {entity.contact && (
-                          <p className="text-sm text-zinc-500 mt-1">{entity.contact}</p>
-                        )}
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                      {entity.email && <span>{entity.email}</span>}
-                      {entity.phone && <span>{entity.phone}</span>}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <Suspense fallback={<EntitiesLoading />}>
+        <EntitiesList />
+      </Suspense>
     </div>
   );
 }
