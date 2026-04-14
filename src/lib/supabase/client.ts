@@ -8,5 +8,12 @@ export function createSupabaseClient() {
     throw new Error('Supabase URL or ANON_KEY is not set');
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey);
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      storageKey: 'sb-fjetlyubvpszezqzrnyb-auth-token',
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
 }
