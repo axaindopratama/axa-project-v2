@@ -1,8 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { transactions, transactionItems } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+
+const createTransactionSchema = z.object({
+  projectId: z.string().min(1, "Project ID wajib diisi"),
+  entityId: z.string().optional(),
+  date: z.string().optional(),
+  amount: z.union([z.string(), z.number()]).optional(),
+  type: z.enum(["expense", "income"]).optional(),
+  paymentStatus: z.enum(["lunas", "belum-lunas", "dicicil"]).optional(),
+  paidAmount: z.union([z.string(), z.number()]).optional(),
+  dueDate: z.string().optional(),
+  paidDate: z.string().optional(),
+  paymentMethod: z.string().optional(),
+  receiptUrl: z.string().optional(),
+  notes: z.string().optional(),
+  items: z.array(z.object({
+    description: z.string().optional(),
+    qty: z.union([z.string(), z.number()]).optional(),
+    unitPrice: z.union([z.string(), z.number()]).optional(),
+    totalPrice: z.union([z.string(), z.number()]).optional(),
+  })).optional(),
+});
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,49 +60,51 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
-    console.log("Creating transaction with body:", JSON.stringify(body));
-
-    if (!body.projectId) {
-      return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+    const validation = createTransactionSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Validasi gagal", details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
     }
+    
+    const { 
+      projectId, entityId, date, amount, type, paymentStatus, 
+      paidAmount, dueDate, paidDate, paymentMethod, receiptUrl, notes, items 
+    } = validation.data;
     
     const newTransaction = {
       id: crypto.randomUUID(),
-      projectId: body.projectId,
-      entityId: body.entityId || null,
-      date: body.date || new Date().toISOString().split("T")[0],
-      amount: parseInt(body.amount) || 0,
-      type: body.type || "expense",
-      paymentStatus: body.paymentStatus || "lunas",
-      paidAmount: parseInt(body.paidAmount) || 0,
-      dueDate: body.dueDate || null,
-      paidDate: body.paidDate || null,
-      paymentMethod: body.paymentMethod || null,
-      receiptUrl: body.receiptUrl || null,
-      notes: body.notes || null,
+      projectId,
+      entityId: entityId || null,
+      date: date || new Date().toISOString().split("T")[0],
+      amount: parseInt(String(amount)) || 0,
+      type: type || "expense",
+      paymentStatus: paymentStatus || "lunas",
+      paidAmount: parseInt(String(paidAmount)) || 0,
+      dueDate: dueDate || null,
+      paidDate: paidDate || null,
+      paymentMethod: paymentMethod || null,
+      receiptUrl: receiptUrl || null,
+      notes: notes || null,
       createdAt: new Date().toISOString(),
     };
     
-    console.log("Inserting transaction:", newTransaction);
-    
     const inserted = await db.insert(transactions).values(newTransaction).returning();
-    console.log("Transaction inserted:", inserted[0].id);
     const transactionId = inserted[0].id;
 
-    if (body.items && Array.isArray(body.items) && body.items.length > 0) {
-      console.log("Inserting items:", body.items);
-      
-      const itemsToInsert = body.items.map((item: any) => ({
+    if (items && Array.isArray(items) && items.length > 0) {
+      const itemsToInsert = items.map((item) => ({
         id: crypto.randomUUID(),
         transactionId,
         description: item.description || "",
-        qty: parseInt(item.qty) || 1,
-        unitPrice: parseInt(item.unitPrice) || 0,
-        totalPrice: parseInt(item.totalPrice) || 0,
+        qty: parseInt(String(item.qty)) || 1,
+        unitPrice: parseInt(String(item.unitPrice)) || 0,
+        totalPrice: parseInt(String(item.totalPrice)) || 0,
       }));
 
       await db.insert(transactionItems).values(itemsToInsert);
-      console.log("Items inserted successfully");
     }
     
     revalidatePath("/transactions");

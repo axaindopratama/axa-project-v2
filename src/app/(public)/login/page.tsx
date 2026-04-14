@@ -1,14 +1,11 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseClient } from "@/lib/supabase/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Wallet, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
+import { Wallet, Mail, Lock, ArrowRight, AlertCircle, CheckCircle } from "lucide-react";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createSupabaseClient();
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +13,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +34,23 @@ export default function LoginPage() {
     } else {
       router.push("/");
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setError("");
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/settings?reset=true`,
+    });
+
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setResetSent(true);
+    }
+    setResetLoading(false);
   };
 
   return (
@@ -67,56 +85,126 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@axa.com"
-                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
-                  required
-                />
-              </div>
-            </div>
+          <form onSubmit={showForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-6">
+            {showForgotPassword ? (
+              <>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="admin@axa.com"
+                      className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
+                      required
+                    />
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
-                  required
-                />
-              </div>
-            </div>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  className="w-full gold-gradient text-on-primary py-4 rounded-lg font-headline font-bold text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {resetLoading ? (
+                    <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Kirim Link Reset
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full gold-gradient text-on-primary py-4 rounded-lg font-headline font-bold text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
-              ) : (
-                <>
-                  Masuk
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetSent(false);
+                    setError("");
+                  }}
+                  className="w-full text-center text-sm text-zinc-500 hover:text-zinc-300"
+                >
+                  Kembali ke Login
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="admin@axa.com"
+                      className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-widest">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full gold-gradient text-on-primary py-4 rounded-lg font-headline font-bold text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-on-primary/30 border-t-on-primary rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      Masuk
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </>
+            )}
           </form>
+
+          {!showForgotPassword && (
+            <div className="text-center mt-4">
+              <button
+                onClick={() => setShowForgotPassword(true)}
+                className="text-xs text-zinc-500 hover:text-zinc-300"
+              >
+                Lupa Password?
+              </button>
+            </div>
+          )}
+
+          {resetSent && (
+            <div className="mt-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+              <p className="text-sm text-emerald-500">
+                Link reset password telah dikirim ke email Anda. Silakan cek inbox atau folder spam.
+              </p>
+            </div>
+          )}
 
           <p className="text-center text-zinc-500 text-sm mt-8">
             Tidak punya akun?{" "}

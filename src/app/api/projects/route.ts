@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
 import { desc, sql } from "drizzle-orm";
+
+const createProjectSchema = z.object({
+  name: z.string().min(1, "Nama proyek wajib diisi"),
+  budget: z.union([z.string(), z.number()]).optional(),
+  status: z.enum(["planning", "active", "completed", "on-hold"]).optional(),
+  hourlyRate: z.union([z.string(), z.number()]).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+});
 
 export async function GET() {
   try {
@@ -27,7 +37,17 @@ export async function POST(req: NextRequest) {
     const db = getDb();
     const body = await req.json();
     
-    // Get project with MAX number (sequential - fills gaps)
+    const validation = createProjectSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Validasi gagal", details: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+    
+    const { name, budget, status, hourlyRate, startDate, endDate } = validation.data;
+    
     const maxProject = await db
       .select({ number: projects.number })
       .from(projects)
@@ -43,12 +63,12 @@ export async function POST(req: NextRequest) {
     const newProject = {
       id: crypto.randomUUID(),
       number: nextNumber,
-      name: body.name,
-      budget: parseInt(body.budget) || 0,
-      status: body.status || "planning",
-      hourlyRate: parseInt(body.hourlyRate) || 150000,
-      startDate: body.startDate || null,
-      endDate: body.endDate || null,
+      name,
+      budget: parseInt(String(budget)) || 0,
+      status: status || "planning",
+      hourlyRate: parseInt(String(hourlyRate)) || 150000,
+      startDate: startDate || null,
+      endDate: endDate || null,
       createdAt: new Date().toISOString(),
     };
     

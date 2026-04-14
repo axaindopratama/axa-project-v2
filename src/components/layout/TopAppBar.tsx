@@ -1,5 +1,6 @@
 "use client";
 
+import { createSupabaseClient } from "@/lib/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Bell, User, LogOut, Settings, X, Loader2 } from "lucide-react";
@@ -21,18 +22,21 @@ interface TopAppBarProps {
   };
 }
 
-export function TopAppBar({ user }: TopAppBarProps) {
+export function TopAppBar({ user: initialUser }: TopAppBarProps) {
   const router = useRouter();
+  const supabase = createSupabaseClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string; avatar?: string } | null>(initialUser || null);
   
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    fetchUser();
     fetchNotifications();
     
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,6 +51,21 @@ export function TopAppBar({ user }: TopAppBarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const fetchUser = async () => {
+    try {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      if (supabaseUser) {
+        setUser({
+          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          email: supabaseUser.email || '',
+          avatar: supabaseUser.user_metadata?.avatar_url
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -201,6 +220,10 @@ export function TopAppBar({ user }: TopAppBarProps) {
                   Settings
                 </button>
                 <button 
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    router.push('/login');
+                  }}
                   className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-surface-container-high flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
