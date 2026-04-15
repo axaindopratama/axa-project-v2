@@ -93,8 +93,9 @@ export const notifications = sqliteTable('notifications', {
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   supabaseUserId: text('supabase_user_id').notNull().unique(),
+  companyId: text('company_id'), // nullable initially, set when user completes profile
   name: text('name').notNull(),
-  email: text('email').notNull().unique(),
+  email: text('email').notNull(),
   role: text('role').notNull().default('user'),
   avatar: text('avatar'),
   phone: text('phone'),

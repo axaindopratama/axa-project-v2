@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
-import { users } from '@/lib/db/schema';
+import { users, companySettings } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: NextRequest) {
@@ -28,16 +28,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, processed: false, reason: 'user_exists' });
     }
 
-    // Create user in Turso
-    await db.insert(users).values({
-      id: crypto.randomUUID(),
-      supabaseUserId,
-      email: email,
-      name,
-      role: 'user',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+  // Create user in Turso - companyId will be set when user completes profile
+  await db.insert(users).values({
+    id: crypto.randomUUID(),
+    supabaseUserId,
+    email: email,
+    name,
+    role: 'user',
+    companyId: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
 
     return NextResponse.json({ received: true, processed: true });
   } catch (error) {
