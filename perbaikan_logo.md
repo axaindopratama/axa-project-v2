@@ -1,0 +1,40 @@
+# Plan: Dynamic Sidebar Branding and Logo Management
+
+## Goal
+Update the sidebar to use dynamic company branding and implement logo management with Supabase Storage.
+
+## Requirements
+- **Sidebar:**
+    - Display dynamic logo, title (from `company_settings.company_name`), and subtitle (from new `company_settings.company_subtitle`) from the database.
+    - Implement fallback (default icon/text) if data is missing.
+- **Settings Page:**
+    - Add file upload input for the logo.
+    - Upload logo to Supabase Storage bucket named "logo".
+    - Automatically delete the old logo from "logo" bucket when a new one is uploaded.
+    - Store the new logo URL in the `company_settings.logo` column.
+    - **Authorization:** Only users with `role === 'admin'` can change logo/settings. (Need to implement/verify role check in API).
+
+## Implementation Steps
+
+1.  **Database Migration:**
+    - Create a migration to add `company_subtitle` column to `company_settings` table.
+
+2.  **Sidebar Modification (`src/app/(protected)/layout.tsx` & `src/components/layout/Sidebar.tsx`):**
+    -   Fetch `company_settings` in `layout.tsx` and pass the logo, name, and subtitle to `Sidebar`.
+    -   Update `Sidebar.tsx` to use the passed props for dynamic branding.
+
+3.  **Settings Page Update (`src/app/(protected)/settings/`):**
+    -   Update `SettingsPageClient.tsx`: Add logo upload form.
+    -   Implement/Update API handler (`src/app/api/settings/route.ts` or new API route):
+        -   Handle file upload to Supabase "logo" bucket.
+        -   Handle deletion of old logo from Supabase "logo" bucket.
+        -   Update `company_settings` in database.
+        -   Implement authorization check for 'admin' role.
+
+## Clarifications Needed
+- None.
+
+## Verification
+- Verify the sidebar updates dynamically.
+- Verify logo upload and deletion logic in the Settings page.
+- Verify role-based access control for settings.
