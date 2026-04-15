@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Database, Bell, Shield, DollarSign, Clock, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
+import { createSupabaseClient } from "@/lib/supabase/client";
+
+const supabase = createSupabaseClient();
 
 interface ToastMessage {
   type: "success" | "error";
@@ -11,12 +14,14 @@ interface ToastMessage {
 interface CompanyData {
   id?: string;
   companyName?: string;
+  companySubtitle?: string;
   companyAddress?: string;
   companyPhone?: string;
   companyEmail?: string;
   companyNpwp?: string;
   logo?: string;
 }
+
 
 interface UserData {
   id?: string;
@@ -54,12 +59,51 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   const [companyData, setCompanyData] = useState<CompanyData>({
     id: stats.companyData?.id || "",
     companyName: String(stats.companyData?.companyName || ""),
+    companySubtitle: String(stats.companyData?.companySubtitle || ""),
     companyAddress: String(stats.companyData?.companyAddress || ""),
     companyPhone: String(stats.companyData?.companyPhone || ""),
     companyEmail: String(stats.companyData?.companyEmail || ""),
     companyNpwp: String(stats.companyData?.companyNpwp || ""),
     logo: String(stats.companyData?.logo || ""),
   });
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSavingCompany(true);
+    try {
+      // 1. Delete old logo if it exists
+      if (companyData.logo) {
+        const oldPath = companyData.logo.split('/').pop();
+        if (oldPath) {
+          await supabase.storage.from('logo').remove([oldPath]);
+        }
+      }
+
+      // 2. Upload new logo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${companyData.id}-${Date.now()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('logo')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // 3. Get new URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('logo')
+        .getPublicUrl(fileName);
+
+      setCompanyData(prev => ({ ...prev, logo: publicUrl }));
+      showToast("success", "Logo berhasil diunggah!");
+    } catch (error: any) {
+      showToast("error", "Gagal mengunggah logo: " + error.message);
+    } finally {
+      setSavingCompany(false);
+    }
+  };
+
 
   const [userData, setUserData] = useState<UserData>({
     name: "Admin User",
@@ -291,12 +335,38 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
 
             <div className="space-y-4">
               <div>
+                <label className="text-xs text-zinc-500 block mb-1">Logo Perusahaan</label>
+                <div className="flex items-center gap-4">
+                  {companyData.logo && (
+                    <img src={companyData.logo} alt="Logo" className="w-16 h-16 object-contain rounded border border-zinc-700" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90"
+                  />
+                </div>
+              </div>
+
+              <div>
                 <label className="text-xs text-zinc-500 block mb-1">Nama Perusahaan</label>
                 <input 
                   type="text" 
                   value={companyData.companyName}
                   onChange={(e) => setCompanyData({ ...companyData, companyName: e.target.value })}
                   placeholder="PT Contoh Indonesia"
+                  className="w-full px-3 py-2 bg-surface-container-highest rounded-lg text-on-surface border border-transparent focus:border-primary outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-500 block mb-1">Subtitle Perusahaan (CV. AXA INDO PRATAMA)</label>
+                <input 
+                  type="text" 
+                  value={companyData.companySubtitle}
+                  onChange={(e) => setCompanyData({ ...companyData, companySubtitle: e.target.value })}
+                  placeholder="CV. AXA INDO PRATAMA"
                   className="w-full px-3 py-2 bg-surface-container-highest rounded-lg text-on-surface border border-transparent focus:border-primary outline-none"
                 />
               </div>

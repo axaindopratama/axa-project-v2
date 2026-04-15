@@ -61,6 +61,7 @@ export default async function SettingsPage() {
       companyPhone: stats.companyData.companyPhone || "",
       companyEmail: stats.companyData.companyEmail || "",
       companyNpwp: stats.companyData.companyNpwp || "",
+      companySubtitle: stats.companyData.companySubtitle || "",
       logo: stats.companyData.logo || "",
     } : null,
   };

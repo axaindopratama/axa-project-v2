@@ -29,7 +29,10 @@ const navigation = [
   { name: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
-export function Sidebar({ className }: { className?: string }) {
+export function Sidebar({ className, company }: { 
+  className?: string, 
+  company?: { logo?: string | null, name: string, subtitle: string } 
+}) {
   const pathname = usePathname();
 
   return (
@@ -42,15 +45,19 @@ export function Sidebar({ className }: { className?: string }) {
       {/* Logo */}
       <div className="px-8 mb-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 gold-gradient flex items-center justify-center rounded">
-            <Wallet className="w-5 h-5 text-on-primary" />
+          <div className="w-8 h-8 gold-gradient flex items-center justify-center rounded overflow-hidden">
+            {company?.logo ? (
+              <img src={company.logo} alt={company.name} className="w-full h-full object-cover" />
+            ) : (
+              <Wallet className="w-5 h-5 text-on-primary" />
+            )}
           </div>
           <div>
             <h2 className="text-primary font-black font-headline tracking-tight uppercase leading-none">
-              The Sovereign
+              {company?.name || "AXA-PROJECT"}
             </h2>
             <p className="text-[10px] text-zinc-500 font-medium tracking-widest mt-1">
-              Ledger v2.0
+              {company?.subtitle || "CV. AXA INDO PRATAMA"}
             </p>
           </div>
         </div>

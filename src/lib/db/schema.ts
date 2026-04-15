@@ -110,6 +110,7 @@ export const companySettings = sqliteTable('company_settings', {
   companyPhone: text('company_phone'),
   companyEmail: text('company_email'),
   companyNpwp: text('company_npwp'),
+  companySubtitle: text('company_subtitle'),
   logo: text('logo'),
   createdAt: text('created_at'),
   updatedAt: text('updated_at'),

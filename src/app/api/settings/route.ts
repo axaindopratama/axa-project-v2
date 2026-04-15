@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { users, companySettings, auditLogs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+async function checkAdminRole() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+  if (!supabaseUser) return false;
+
+  const db = getDb();
+  const userRecord = await db
+    .select()
+    .from(users)
+    .where(eq(users.supabaseUserId, supabaseUser.id))
+    .limit(1);
+
+  return userRecord[0]?.role === 'administrator';
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,6 +54,10 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type");
+
+    if (type === "company" && !(await checkAdminRole())) {
+        return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
 
     if (type === "user") {
       const { id, name, email, phone, avatar } = body;
@@ -102,7 +122,7 @@ export async function PUT(req: NextRequest) {
     }
 
     if (type === "company") {
-      const { id, companyName, companyAddress, companyPhone, companyEmail, companyNpwp, logo } = body;
+      const { id, companyName, companySubtitle, companyAddress, companyPhone, companyEmail, companyNpwp, logo } = body;
       
       if (!companyName || !companyName.trim()) {
         return NextResponse.json({ error: "Nama perusahaan wajib diisi" }, { status: 400 });
@@ -116,6 +136,7 @@ export async function PUT(req: NextRequest) {
           .update(companySettings)
           .set({
             companyName,
+            companySubtitle,
             companyAddress,
             companyPhone,
             companyEmail,
@@ -131,6 +152,7 @@ export async function PUT(req: NextRequest) {
           .values({
             id: id || crypto.randomUUID(),
             companyName,
+            companySubtitle,
             companyAddress,
             companyPhone,
             companyEmail,
