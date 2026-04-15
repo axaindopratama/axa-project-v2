@@ -1,10 +1,12 @@
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
-import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, AlertTriangle, Clock, ArrowUpRight, ArrowDownRight, Activity, Users, Folder } from "lucide-react";
+import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, Clock, ArrowUpRight, ArrowDownRight, Activity, Users, Folder } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getDb } from "@/lib/db";
 import { projects, transactions, entities } from "@/lib/db/schema";
 import { DashboardChart, RecentTransactions, StatsOverview } from "@/components/dashboard/DashboardWidgets";
+import { ExportPDFButton } from "@/components/dashboard/ExportPDF";
+import { BudgetAlertsPanel } from "@/components/dashboard/BudgetAlerts";
 
 export const dynamic = "force-dynamic";
 
@@ -57,16 +59,16 @@ async function getDashboardStats() {
     
     const budgetUsagePercent = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
     
-    const budgetAlerts: { projectId: string; projectName: string; percentage: number; type: string }[] = [];
+    const budgetAlerts: { projectId: string; projectName: string; percentage: number; type: "warning" | "critical"; spent: number; budget: number; remaining: number }[] = [];
     for (const project of allProjects) {
       const projectTx = allTransactions.filter(t => t.projectId === project.id && t.type === 'expense');
       const spent = projectTx.reduce((sum, t) => sum + t.amount, 0);
       const usage = project.budget > 0 ? (spent / project.budget) * 100 : 0;
       
       if (usage >= 80) {
-        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'critical' });
+        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'critical' as const, spent, budget: project.budget, remaining: project.budget - spent });
       } else if (usage >= 60) {
-        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'warning' });
+        budgetAlerts.push({ projectId: project.id, projectName: project.name, percentage: Math.round(usage), type: 'warning' as const, spent, budget: project.budget, remaining: project.budget - spent });
       }
     }
 
@@ -129,11 +131,16 @@ export default async function DashboardPage() {
   return (
     <div className="p-6 lg:p-10 pt-24 space-y-8">
       {/* Breadcrumbs */}
-      <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.1em]">
-        <span className="text-zinc-600">Dashboard</span>
-        <ChevronRight className="w-3 h-3 text-zinc-700" />
-        <span className="text-primary">Ringkasan Keuangan</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.1em]">
+          <span className="text-zinc-600">Dashboard</span>
+          <ChevronRight className="w-3 h-3 text-zinc-700" />
+          <span className="text-primary">Ringkasan Keuangan</span>
+        </div>
+        <ExportPDFButton targetId="dashboard-content" fileName="laporan-dashboard" />
       </div>
+
+      <div id="dashboard-content">
 
       {/* Stats Overview */}
       <StatsOverview 
@@ -199,35 +206,7 @@ export default async function DashboardPage() {
         {/* Side Cards */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           {/* Budget Alerts */}
-          {stats.budgetAlerts.length > 0 && (
-            <div className="bg-surface-container-low rounded-lg p-6 border-l-4 border-yellow-500">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-5 h-5 text-yellow-500" />
-                <h3 className="text-yellow-500 font-headline font-bold uppercase tracking-widest text-[10px]">
-                  Peringatan Budget
-                </h3>
-              </div>
-              <div className="space-y-3">
-                {stats.budgetAlerts.map((alert) => (
-                  <Link
-                    key={alert.projectId}
-                    href={`/projects/${alert.projectId}`}
-                    className="flex items-center justify-between p-3 bg-surface-container-high rounded hover:bg-surface-container-highest transition-colors"
-                  >
-                    <div>
-                      <p className="text-xs text-zinc-300 font-medium">{alert.projectName}</p>
-                      <p className="text-[10px] text-zinc-500">{alert.percentage}% terpakai</p>
-                    </div>
-                    <span className={`px-2 py-1 text-[8px] uppercase font-bold tracking-widest rounded ${
-                      alert.type === 'critical' ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-500'
-                    }`}>
-                      {alert.type === 'critical' ? 'Kritis' : 'Peringatan'}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+          <BudgetAlertsPanel alerts={stats.budgetAlerts} />
 
           {/* Burn Rate */}
           <div className="bg-surface-container-low rounded-lg p-6">
@@ -384,6 +363,7 @@ export default async function DashboardPage() {
           Buat Proyek Baru
         </span>
       </Link>
+    </div>
     </div>
   );
 }
