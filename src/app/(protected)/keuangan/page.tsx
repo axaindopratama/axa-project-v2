@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, TrendingDown, PieChart, Calendar } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Wallet, TrendingUp, PieChart, BarChart3 } from "lucide-react";
 import { getDb } from "@/lib/db";
 import { transactions, projects } from "@/lib/db/schema";
+import { CashFlowChart, ExpenseByCategory, BudgetUsageChart, NetCashFlowChart } from "@/components/dashboard/KeuanganCharts";
 
 export const dynamic = "force-dynamic";
 
@@ -79,8 +80,6 @@ export default async function KeuanganPage() {
   const totalBudget = projectStats.reduce((sum, p) => sum + p.budget, 0);
   const usedBudget = totalExpense;
   const budgetUsagePercent = totalBudget > 0 ? (usedBudget / totalBudget) * 100 : 0;
-  
-  const maxMonthly = Math.max(...monthlyData.map(m => Math.max(m.income, m.expense)));
 
   return (
     <div className="p-10 pt-24 space-y-8">
@@ -147,102 +146,43 @@ export default async function KeuanganPage() {
         <div className="bg-surface-container-low p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
-              Monthly Cash Flow
+              Cash Flow Chart
             </h2>
-            <Calendar className="w-5 h-5 text-zinc-500" />
+            <BarChart3 className="w-5 h-5 text-zinc-500" />
           </div>
-          
-          <div className="space-y-4">
-            {monthlyData.map((month) => (
-              <div key={month.month} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-400 font-bold uppercase">{month.month}</span>
-                  <div className="flex gap-4">
-                    <span className="text-emerald-500">
-                      +{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0, notation: "compact" }).format(month.income)}
-                    </span>
-                    <span className="text-red-500">
-                      -{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0, notation: "compact" }).format(month.expense)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-1 h-3">
-                  {maxMonthly > 0 && (
-                    <>
-                      <div 
-                        className="bg-emerald-500 rounded-l-full"
-                        style={{ width: `${(month.income / maxMonthly) * 100}%` }}
-                      />
-                      <div 
-                        className="bg-red-500 rounded-r-full"
-                        style={{ width: `${(month.expense / maxMonthly) * 100}%` }}
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-6 mt-6 pt-4 border-t border-surface-container-highest">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
-              <span className="text-xs text-zinc-500">Income</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span className="text-xs text-zinc-500">Expense</span>
-            </div>
-          </div>
+          <CashFlowChart data={monthlyData} />
         </div>
 
         <div className="bg-surface-container-low p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
-              Budget Overview
+              Net Cash Flow
+            </h2>
+            <TrendingUp className="w-5 h-5 text-zinc-500" />
+          </div>
+          <NetCashFlowChart data={monthlyData} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-surface-container-low p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-headline font-bold text-on-surface">
+              Pengeluaran per Kategori
             </h2>
             <PieChart className="w-5 h-5 text-zinc-500" />
           </div>
+          <ExpenseByCategory transactions={transactionsList} />
+        </div>
 
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-zinc-400">Total Budget</span>
-                <span className="text-on-surface font-headline font-bold">
-                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(totalBudget)}
-                </span>
-              </div>
-              <div className="h-4 bg-surface-container-highest rounded-full overflow-hidden">
-                <div 
-                  className={`h-full rounded-full transition-all ${
-                    budgetUsagePercent > 80 ? "bg-red-500" : budgetUsagePercent > 60 ? "bg-yellow-500" : "gold-gradient"
-                  }`}
-                  style={{ width: `${Math.min(budgetUsagePercent, 100)}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-2 text-xs">
-                <span className="text-zinc-500">Used: {budgetUsagePercent.toFixed(1)}%</span>
-                <span className="text-zinc-500">
-                  Remaining: {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(totalBudget - usedBudget)}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-surface-container-high p-4 rounded-lg">
-                <span className="text-xs text-zinc-500 block mb-1">Used</span>
-                <span className="text-xl font-headline font-bold text-on-surface">
-                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0, notation: "compact" }).format(usedBudget)}
-                </span>
-              </div>
-              <div className="bg-surface-container-high p-4 rounded-lg">
-                <span className="text-xs text-zinc-500 block mb-1">Remaining</span>
-                <span className="text-xl font-headline font-bold text-primary">
-                  {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0, notation: "compact" }).format(totalBudget - usedBudget)}
-                </span>
-              </div>
-            </div>
+        <div className="bg-surface-container-low p-6 rounded-xl">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-headline font-bold text-on-surface">
+              Budget per Proyek
+            </h2>
+            <BarChart3 className="w-5 h-5 text-zinc-500" />
           </div>
+          <BudgetUsageChart projects={projectStats} />
         </div>
       </div>
 
