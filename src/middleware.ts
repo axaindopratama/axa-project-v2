@@ -1,57 +1,88 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { cookies } from 'next/headers';
+import { getDb } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import { canAccessRoute, type UserRole } from '@/lib/rbac';
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-  // Skip auth check for these public routes
-  const publicRoutes = ['/login', '/api/auth', '/api/ai/test', '/api/ai/summary'];
-  if (publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
-    return NextResponse.next();
-  }
-
-  const cookieStore = await cookies();
-  
+  // Create Supabase client
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
+        get(name: string) {
+          return request.cookies.get(name)?.value;
         },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Called from Server Component - ignore
-          }
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options });
+          response.cookies.set({ name, value: '', ...options });
         },
       },
     }
   );
 
+  // Check auth
   const { data: { user } } = await supabase.auth.getUser();
 
-  const protectedRoutes = ['/', '/projects', '/entities', '/transactions', '/keuangan', '/kanban', '/scanner', '/ai-chat', '/settings', '/help'];
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname === route || pathname.startsWith(route + '/')
-  );
-
-  // Redirect to login if user not found on protected route
-  if (!user && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Public routes - allow access
+  const publicRoutes = ['/login', '/api/auth'];
+  if (publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
+    // If logged in, redirect to dashboard
+    if (user && request.nextUrl.pathname === '/login') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    return response;
   }
 
-  // Redirect to dashboard if user already logged in and tries to access /login
-  if (user && pathname === '/login') {
+  // Protected routes - require auth
+  if (!user) {
+    const redirectUrl = new URL('/login', request.url);
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Get user role from metadata or database
+  let userRole: UserRole = (user.user_metadata?.role as UserRole) || 'user';
+  
+  // Try to get role from local database
+  try {
+    const db = getDb();
+    const dbUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.supabaseUserId, user.id))
+      .limit(1);
+    
+    if (dbUser[0]?.role) {
+      userRole = dbUser[0].role as UserRole;
+    }
+  } catch {
+    // Use metadata role as fallback
+  }
+
+  // Check route access
+  const pathname = request.nextUrl.pathname;
+  if (!canAccessRoute(userRole, pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  // Add user info to headers for API routes
+  response.headers.set('x-user-id', user.id);
+  response.headers.set('x-user-role', userRole);
+
+  return response;
 }
 
 export const config = {

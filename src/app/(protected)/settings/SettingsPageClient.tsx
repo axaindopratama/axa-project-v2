@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Database, Bell, Shield, DollarSign, Clock, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabase/client";
 
