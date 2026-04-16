@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from 'react';
 // These components are missing from the project, commenting out to fix the build.
 // import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
