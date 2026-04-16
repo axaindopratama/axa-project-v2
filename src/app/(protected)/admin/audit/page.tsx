@@ -1,21 +1,25 @@
 import { getDb } from "@/lib/db";
 import { auditLogs, users, projects } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { Shield, FileText, User as UserIcon, Clock } from "lucide-react";
+import { Shield, User as UserIcon, Clock } from "lucide-react";
+import { AuditLogDetailModal } from "@/components/admin/AuditLogDetailModal";
 
 export const dynamic = "force-dynamic";
 
 export default async function AuditLogPage() {
   const db = getDb();
   
-  // Fetch audit logs with user and project details
-  // Since drizzle doesn't easily support left joins on dynamically referenced tables like this,
-  // we'll fetch logs and map them.
   const logs = await db.select().from(auditLogs).orderBy(desc(auditLogs.createdAt)).limit(100);
   const allUsers = await db.select().from(users);
   const allProjects = await db.select().from(projects);
   
-  const userMap = new Map(allUsers.map(u => [u.id, u]));
+  // Create a map by both id and supabaseUserId for easier lookups
+  const userMap = new Map();
+  allUsers.forEach(u => {
+    userMap.set(u.id, u);
+    userMap.set(u.supabaseUserId, u);
+  });
+  
   const projectMap = new Map(allProjects.map(p => [p.id, p]));
   
   const formattedLogs = logs.map(log => {
@@ -105,11 +109,11 @@ export default async function AuditLogPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="max-w-xs truncate text-xs text-zinc-500" title={log.newValue || log.oldValue || "No details"}>
-                        {log.action === 'UPDATE' ? `Updated: ${log.newValue?.substring(0,30)}...` : 
-                         log.action === 'DELETE' ? `Deleted record` : 
-                         log.action === 'CREATE' ? `Created: ${log.newValue?.substring(0,30)}...` : "View details"}
-                      </div>
+                      <AuditLogDetailModal 
+                        action={log.action}
+                        oldValue={log.oldValue}
+                        newValue={log.newValue}
+                      />
                     </td>
                   </tr>
                 ))
