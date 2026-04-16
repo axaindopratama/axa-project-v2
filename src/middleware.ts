@@ -87,8 +87,9 @@ export async function middleware(request: NextRequest) {
   // Check profile completeness - redirect to /settings?setup=true if profile is incomplete
   const settingsPath = '/settings';
   const isSettingsPage = pathname === settingsPath;
+  const isSetupMode = request.nextUrl.searchParams.get('setup') === 'true';
 
-  if (!isSettingsPage) {
+  if (!isSettingsPage || !isSetupMode) {
     if (!userRecord[0] || !userRecord[0].name || userRecord[0].name.trim() === '') {
       const redirectUrl = new URL(settingsPath, request.url);
       redirectUrl.searchParams.set('setup', 'true');
