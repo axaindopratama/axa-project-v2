@@ -257,6 +257,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex gap-3">
           <Link 
+            href={`/projects/${projectId}/invoice`}
+            className="flex items-center gap-2 px-4 py-2 gold-gradient text-on-primary rounded-lg font-headline font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all"
+          >
+            Invoice
+          </Link>
+          <Link 
             href={`/projects/${projectId}/edit`}
             className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-primary hover:bg-surface-container-high transition-colors"
           >

@@ -15,6 +15,7 @@ import {
   Plus,
   Wallet,
   Bot,
+  Shield,
 } from "lucide-react";
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
   { name: "AI Scanner", href: "/scanner", icon: Scan },
   { name: "AI Pilot", href: "/ai-chat", icon: Bot },
   { name: "Pengaturan", href: "/settings", icon: Settings },
+  { name: "Audit Log", href: "/admin/audit", icon: Shield },
 ];
 
 export function Sidebar({ className, company }: { 

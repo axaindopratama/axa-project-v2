@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { projects, transactions } from "@/lib/db/schema";
+import { projects, transactions, projectSettings } from "@/lib/db/schema";
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     
     const allProjects = await db.select().from(projects);
     const allTransactions = await db.select().from(transactions);
+    const allSettings = await db.select().from(projectSettings);
     
     const alerts: {
       id: string;
@@ -27,27 +28,31 @@ export async function GET(req: NextRequest) {
       const spent = projectTxs.reduce((sum, t) => sum + t.amount, 0);
       const percentage = project.budget > 0 ? (spent / project.budget) * 100 : 0;
       
-      if (percentage >= 80) {
+      const settings = allSettings.find(s => s.projectId === project.id);
+      const criticalThreshold = settings?.alertThresholdCritical ?? 80;
+      const warningThreshold = settings?.alertThresholdWarning ?? 60;
+      
+      if (percentage >= criticalThreshold) {
         alerts.push({
           id: `${project.id}-critical`,
           projectId: project.id,
           projectName: project.name,
           projectNumber: project.number,
           alertType: 'critical',
-          thresholdPercentage: 80,
+          thresholdPercentage: criticalThreshold,
           currentPercentage: Math.round(percentage),
           currentSpent: spent,
           isTriggered: true,
           triggeredAt: new Date().toISOString(),
         });
-      } else if (percentage >= 60) {
+      } else if (percentage >= warningThreshold) {
         alerts.push({
           id: `${project.id}-warning`,
           projectId: project.id,
           projectName: project.name,
           projectNumber: project.number,
           alertType: 'warning',
-          thresholdPercentage: 60,
+          thresholdPercentage: warningThreshold,
           currentPercentage: Math.round(percentage),
           currentSpent: spent,
           isTriggered: true,

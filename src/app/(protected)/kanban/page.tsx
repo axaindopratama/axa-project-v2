@@ -7,6 +7,7 @@ import { Plus, MoreHorizontal, GripVertical, TrendingUp, TrendingDown, AlertTria
 interface Task {
   id: string;
   projectId: string;
+  assignedTo: string | null;
   title: string;
   status: string;
   estCost: number;
@@ -60,6 +61,7 @@ export default function KanbanPage() {
   // Form states
   const [taskForm, setTaskForm] = useState({
     projectId: "",
+    assignedTo: "",
     title: "",
     estCost: 0,
   });
@@ -155,6 +157,7 @@ export default function KanbanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId: taskForm.projectId,
+          assignedTo: taskForm.assignedTo || null,
           title: taskForm.title,
           estCost: taskForm.estCost,
         }),
@@ -163,7 +166,7 @@ export default function KanbanPage() {
       if (!res.ok) throw new Error("Failed to create task");
 
       setShowAddModal(false);
-      setTaskForm({ projectId: "", title: "", estCost: 0 });
+      setTaskForm({ projectId: "", assignedTo: "", title: "", estCost: 0 });
       
       if (selectedProject) {
         fetchTasks(selectedProject);
@@ -187,6 +190,7 @@ export default function KanbanPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: selectedTask.title,
+          assignedTo: selectedTask.assignedTo || null,
           estCost: selectedTask.estCost,
         }),
       });
@@ -403,10 +407,15 @@ export default function KanbanPage() {
                     className="bg-surface-container-high p-4 rounded-lg group hover:bg-surface-container-highest transition-colors"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-1">
                         <span className="text-xs text-zinc-500 uppercase font-bold tracking-widest">
                           {getProjectName(task.projectId)}
                         </span>
+                        {task.assignedTo && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded w-fit uppercase font-bold">
+                            {getEmployeeName(task.assignedTo)}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1">
                         <button 
@@ -557,6 +566,22 @@ export default function KanbanPage() {
 
               <div>
                 <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
+                  Tugaskan Ke
+                </label>
+                <select
+                  value={taskForm.assignedTo}
+                  onChange={(e) => setTaskForm({ ...taskForm, assignedTo: e.target.value })}
+                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg mb-4"
+                >
+                  <option value="">-- Tidak Ditugaskan --</option>
+                  {employees.map(e => (
+                    <option key={e.id} value={e.id}>{e.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
                   Judul Task *
                 </label>
                 <input
@@ -616,6 +641,22 @@ export default function KanbanPage() {
             </div>
 
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
+                  Tugaskan Ke
+                </label>
+                <select
+                  value={selectedTask.assignedTo || ""}
+                  onChange={(e) => setSelectedTask({ ...selectedTask, assignedTo: e.target.value })}
+                  className="w-full bg-surface-container-high border-none text-zinc-300 py-3 px-4 rounded-lg mb-4"
+                >
+                  <option value="">-- Tidak Ditugaskan --</option>
+                  {employees.map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
                   Judul Task *

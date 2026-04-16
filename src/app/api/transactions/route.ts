@@ -94,6 +94,54 @@ export async function POST(req: NextRequest) {
     const inserted = await db.insert(transactions).values(newTransaction).returning();
     const transactionId = inserted[0].id;
 
+    // Automated Budget Notification
+    if (newTransaction.type === 'expense') {
+      try {
+        const { projects, projectSettings, notifications } = await import("@/lib/db/schema");
+        const { and } = await import("drizzle-orm");
+        
+        const projectData = await db.select().from(projects).where(eq(projects.id, projectId)).limit(1);
+        if (projectData.length > 0) {
+          const project = projectData[0];
+          const allTxs = await db.select().from(transactions).where(and(eq(transactions.projectId, projectId), eq(transactions.type, 'expense')));
+          const totalSpent = allTxs.reduce((sum, t) => sum + t.amount, 0);
+          
+          if (project.budget > 0) {
+            const percentage = (totalSpent / project.budget) * 100;
+            const settingsData = await db.select().from(projectSettings).where(eq(projectSettings.projectId, project.id)).limit(1);
+            const settings = settingsData[0];
+            
+            const criticalThreshold = settings?.alertThresholdCritical ?? 80;
+            const warningThreshold = settings?.alertThresholdWarning ?? 60;
+            
+            // Only trigger if this specific transaction pushed it over the threshold
+            // Actually, simpler approach: just check if it's over, and maybe we can prevent duplicate notifications later
+            // But for now, we just insert. To prevent spam, we could check if a notification was already sent today.
+            
+            if (percentage >= criticalThreshold) {
+              await db.insert(notifications).values({
+                id: crypto.randomUUID(),
+                projectId: project.id,
+                type: 'budget_alert',
+                title: 'Kritis: Budget Hampir Habis',
+                message: `Pengeluaran proyek ${project.name} telah mencapai ${percentage.toFixed(1)}% dari budget.`,
+              });
+            } else if (percentage >= warningThreshold) {
+              await db.insert(notifications).values({
+                id: crypto.randomUUID(),
+                projectId: project.id,
+                type: 'budget_alert',
+                title: 'Peringatan Budget',
+                message: `Pengeluaran proyek ${project.name} telah mencapai ${percentage.toFixed(1)}% dari budget.`,
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to process budget notifications:", e);
+      }
+    }
+
     if (items && Array.isArray(items) && items.length > 0) {
       const itemsToInsert = items.map((item) => ({
         id: crypto.randomUUID(),

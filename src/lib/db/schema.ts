@@ -20,6 +20,7 @@ export const projects = sqliteTable('projects', {
 export const tasks = sqliteTable('tasks', {
   id: text('id').primaryKey(),
   projectId: text('project_id').notNull().references(() => projects.id),
+  assignedTo: text('assigned_to').references(() => entities.id), // Link to an employee entity
   title: text('title').notNull(),
   status: text('status').notNull().default('todo'),
   estCost: integer('est_cost').default(0),

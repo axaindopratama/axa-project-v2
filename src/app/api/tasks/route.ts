@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     const newTask = {
       id: crypto.randomUUID(),
       projectId: body.projectId,
+      assignedTo: body.assignedTo || null,
       title: body.title,
       status: body.status || 'todo',
       estCost: parseInt(body.estCost) || 0,
