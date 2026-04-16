@@ -25,11 +25,14 @@ export default async function ProtectedLayout({
 
   return (
     <div className="min-h-screen bg-surface">
-      <Sidebar company={{
-        logo: company.logo,
-        name: company.companyName || "AXA-PROJECT",
-        subtitle: company.companySubtitle || "CV. AXA INDO PRATAMA"
-      }} />
+      <Sidebar 
+        user={user}
+        company={{
+          logo: company.logo,
+          name: company.companyName || "AXA-PROJECT",
+          subtitle: company.companySubtitle || "CV. AXA INDO PRATAMA"
+        }} 
+      />
       <div className="ml-64">
         <TopAppBar user={user} />
         <main className="pt-16">{children}</main>

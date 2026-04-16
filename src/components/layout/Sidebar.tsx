@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { createSupabaseClient } from "@/lib/supabase/client";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -16,6 +17,8 @@ import {
   Wallet,
   Bot,
   Shield,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 
 const navigation = [
@@ -31,11 +34,19 @@ const navigation = [
   { name: "Audit Log", href: "/admin/audit", icon: Shield },
 ];
 
-export function Sidebar({ className, company }: { 
+export function Sidebar({ className, company, user }: { 
   className?: string, 
-  company?: { logo?: string | null, name: string, subtitle: string } 
+  company?: { logo?: string | null, name: string, subtitle: string },
+  user?: { name: string; email: string; avatar?: string }
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createSupabaseClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   return (
     <aside
@@ -89,6 +100,20 @@ export function Sidebar({ className, company }: {
 
       {/* Footer */}
       <div className="px-8 mt-auto space-y-4">
+        {/* User Info */}
+        <div className="flex items-center gap-3 p-3 bg-surface-container-highest rounded-lg mb-4">
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-xs font-bold text-on-surface truncate">{user?.name || "User"}</p>
+            <p className="text-[10px] text-zinc-500 truncate">{user?.email || ""}</p>
+          </div>
+          <button onClick={handleLogout} className="text-zinc-500 hover:text-red-500 transition-colors">
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+
         <Link href="/projects/new" className="w-full gold-gradient text-on-primary py-3 rounded-md font-headline font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/10 transition-transform active:scale-95 flex items-center justify-center">
           <Plus className="w-4 h-4 inline mr-2" />
           New Project
