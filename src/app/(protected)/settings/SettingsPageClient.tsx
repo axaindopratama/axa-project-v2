@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from \"next/navigation\";
 import { Database, Bell, Shield, DollarSign, Clock, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabase/client";
 
@@ -52,6 +53,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
+  const router = useRouter();
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -106,10 +108,9 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
-
-      const data = await res.json();
       if (res.ok && !data.error) {
         showToast("success", "Logo berhasil diunggah dan disimpan!");
+        router.refresh();
       } else {
         showToast("error", data.error || "Logo terunggah tapi gagal disimpan");
       }
