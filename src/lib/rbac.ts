@@ -64,7 +64,12 @@ export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
 }
 
 export function canAccessRoute(role: UserRole, pathname: string): boolean {
-  const adminRoutes = ["/settings", "/users", "/audit"];
+  // Allow all logged-in users to access settings
+  if (pathname.startsWith('/settings')) {
+    return true;
+  }
+
+  const adminRoutes = ["/users", "/audit"];
   const managerRoutes = ["/projects", "/projects/new", "/entities", "/entities/new", "/transactions", "/transactions/new", "/keuangan", "/kanban"];
   
   if (adminRoutes.some(route => pathname.startsWith(route))) {
