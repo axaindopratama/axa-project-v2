@@ -66,10 +66,10 @@ export default function LoginPage() {
             <Wallet className="w-8 h-8 text-on-primary" />
           </div>
           <h1 className="text-3xl font-headline font-black text-primary uppercase tracking-tight">
-            The Sovereign
+            AXA PROJECT
           </h1>
           <p className="text-zinc-500 font-medium tracking-widest mt-2">
-            Ledger v2.0
+            CV. AXA INDO PRATAMA
           </p>
         </div>
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
                       type="email"
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
-                      placeholder="admin@axa.com"
+                      placeholder="axaindopratama@gmail.com"
                       className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
                       required
                     />
@@ -144,7 +144,7 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@axa.com"
+                      placeholder="axaindopratama@gmail.com"
                       className="w-full bg-surface-container-high border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40 placeholder:text-zinc-600"
                       required
                     />
