@@ -79,6 +79,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Skip profile check for API routes
+  if (pathname.startsWith('/api/')) {
+    return response;
+  }
+
   // Check profile completeness - redirect to /settings?setup=true if profile is incomplete
   const settingsPath = '/settings';
   const isSettingsPage = pathname === settingsPath;

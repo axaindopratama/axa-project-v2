@@ -156,7 +156,14 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
               role: data.role || "user"
             });
             setCurrentUserId(data.id);
+          } else {
+            // Fallback: get user ID from auth if record doesn't exist yet
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setCurrentUserId(user.id);
           }
+        } else {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) setCurrentUserId(user.id);
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error);
