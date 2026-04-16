@@ -208,7 +208,7 @@ export default function LoginPage() {
 
           <p className="text-center text-zinc-500 text-sm mt-8">
             Tidak punya akun?{" "}
-            <a href="#" className="text-primary hover:underline">
+            <a href="https://wa.me/6281250070876" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
               Hubungi Administrator
             </a>
           </p>
