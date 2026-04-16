@@ -108,6 +108,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
+      const data = await res.json();
       if (res.ok && !data.error) {
         showToast("success", "Logo berhasil diunggah dan disimpan!");
         router.refresh();
