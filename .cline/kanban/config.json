@@ -1,0 +1,9 @@
+{
+  "shortcuts": [
+    {
+      "label": "npm run build",
+      "command": "npm run build",
+      "icon": "play"
+    }
+  ]
+}
