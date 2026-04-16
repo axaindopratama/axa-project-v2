@@ -4,6 +4,11 @@
       "label": "npm run build",
       "command": "npm run build",
       "icon": "play"
+    },
+    {
+      "label": "Push commit GITHUB",
+      "command": "git push origin main",
+      "icon": "play"
     }
   ]
 }
