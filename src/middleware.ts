@@ -83,11 +83,8 @@ export async function middleware(request: NextRequest) {
   const settingsPath = '/settings';
   const isSettingsPage = pathname === settingsPath;
 
-  if (!isSettingsPage && userRecord[0]) {
-    const userProfile = userRecord[0];
-    const isProfileIncomplete = !userProfile.name || userProfile.name.trim() === '';
-
-    if (isProfileIncomplete) {
+  if (!isSettingsPage) {
+    if (!userRecord[0] || !userRecord[0].name || userRecord[0].name.trim() === '') {
       const redirectUrl = new URL(settingsPath, request.url);
       redirectUrl.searchParams.set('setup', 'true');
       return NextResponse.redirect(redirectUrl);

@@ -13,14 +13,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  const { name, company_id } = await request.json();
+  const { name, email, phone, role } = await request.json();
   const database = getDb();
 
   // Check if user exists in local database
   const existingUser = await database
     .select()
     .from(users)
-    .where(eq(users.email, user.email!))
+    .where(eq(users.supabaseUserId, user.id))
     .limit(1);
 
   const now = new Date().toISOString();
@@ -30,20 +30,20 @@ export async function POST(request: Request) {
     await database
       .update(users)
       .set({
-        name,
-        ...(company_id && { companyId: company_id }),
+        name: name || existingUser[0].name,
+        phone: phone || existingUser[0].phone,
         updatedAt: now,
       })
       .where(eq(users.id, existingUser[0].id));
   } else {
     // Create new user
     await database.insert(users).values({
-      id: user.id,
+      id: crypto.randomUUID(),
       supabaseUserId: user.id,
       email: user.email!,
-      name,
-      role: 'member', // Default role
-      ...(company_id && { companyId: company_id }),
+      name: name,
+      role: role || 'user',
+      phone: phone,
       createdAt: now,
       updatedAt: now,
     });

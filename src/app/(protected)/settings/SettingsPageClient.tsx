@@ -204,15 +204,15 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       showToast("error", "Nama wajib diisi!");
       return;
     }
-    if (!userData.email?.trim()) {
-      showToast("error", "Email wajib diisi!");
-      return;
-    }
+    // We don't strictly require email here because we get it from auth
     
     setSavingProfile(true);
     try {
-      const res = await fetch("/api/settings?type=user", {
-        method: "PUT",
+      const endpoint = currentUserId ? "/api/settings?type=user" : "/api/users/sync";
+      const method = currentUserId ? "PUT" : "POST";
+      
+      const res = await fetch(endpoint, {
+        method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: currentUserId,
@@ -224,6 +224,9 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       
       if (res.ok && !data.error) {
         showToast("success", "Profil berhasil diperbarui!");
+        if (isSetupMode) {
+          window.location.href = "/";
+        }
       } else {
         showToast("error", data.error || "Gagal menyimpan profil");
       }
