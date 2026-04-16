@@ -55,6 +55,8 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [companyData, setCompanyData] = useState<CompanyData>({
     id: stats.companyData?.id || "",
@@ -83,7 +85,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
 
       // 2. Upload new logo
       const fileExt = file.name.split('.').pop();
-      const fileName = `${companyData.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${companyData.id || 'new'}-${Date.now()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('logo')
         .upload(fileName, file);
@@ -95,8 +97,22 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         .from('logo')
         .getPublicUrl(fileName);
 
-      setCompanyData(prev => ({ ...prev, logo: publicUrl }));
-      showToast("success", "Logo berhasil diunggah!");
+      const updatedData = { ...companyData, logo: publicUrl };
+      setCompanyData(updatedData);
+
+      // 4. Auto-save to database
+      const res = await fetch("/api/settings?type=company", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedData),
+      });
+
+      const data = await res.json();
+      if (res.ok && !data.error) {
+        showToast("success", "Logo berhasil diunggah dan disimpan!");
+      } else {
+        showToast("error", data.error || "Logo terunggah tapi gagal disimpan");
+      }
     } catch (error: any) {
       showToast("error", "Gagal mengunggah logo: " + error.message);
     } finally {
@@ -106,13 +122,49 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
 
 
   const [userData, setUserData] = useState<UserData>({
-    name: "Admin User",
-    email: "admin@axaproject.com",
-    phone: "+62 812 3456 7890",
-    role: "Administrator",
+    name: "",
+    email: "",
+    phone: "",
+    role: "user"
   });
 
   const [newPassword, setNewPassword] = useState("");
+  const [isSetupMode, setIsSetupMode] = useState(false);
+
+  useEffect(() => {
+    // Check for setup mode
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("setup") === "true") {
+        setIsSetupMode(true);
+      }
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("/api/settings?type=profile");
+        if (res.ok) {
+          const { data } = await res.json();
+          if (data) {
+            setUserData({
+              id: data.id,
+              name: data.name || "",
+              email: data.email || "",
+              phone: data.phone || "",
+              role: data.role || "user"
+            });
+            setCurrentUserId(data.id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    
+    fetchProfile();
+  }, []);
 
   const showToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -163,7 +215,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: "current-user",
+          id: currentUserId,
           ...userData,
         }),
       });
@@ -234,6 +286,16 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           Konfigurasi sistem, profil, dan preferensi
         </p>
       </div>
+
+      {isSetupMode && (
+        <div className="bg-primary/20 border border-primary text-on-surface p-4 rounded-xl flex items-start gap-4">
+          <AlertTriangle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
+          <div>
+            <h3 className="font-bold text-lg">Lengkapi Profil Anda</h3>
+            <p className="text-zinc-300">Harap lengkapi nama dan email Anda untuk melanjutkan penggunaan aplikasi.</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

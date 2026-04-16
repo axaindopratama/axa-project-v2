@@ -4,6 +4,21 @@ import { users, companySettings, auditLogs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+async function getCurrentUser() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+  if (!supabaseUser) return null;
+  
+  const db = getDb();
+  const userRecord = await db
+    .select()
+    .from(users)
+    .where(eq(users.supabaseUserId, supabaseUser.id))
+    .limit(1);
+  
+  return userRecord[0] || null;
+}
+
 async function checkAdminRole() {
   const supabase = await createSupabaseServerClient();
   const { data: { user: supabaseUser } } = await supabase.auth.getUser();
@@ -38,6 +53,15 @@ export async function GET(req: NextRequest) {
         .orderBy(desc(auditLogs.createdAt))
         .limit(limit);
       return NextResponse.json({ data: result });
+    }
+    
+    // Get current user's profile
+    if (type === "profile") {
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.json({ data: currentUser });
     }
 
     const result = await db.select().from(users).orderBy(desc(users.createdAt));

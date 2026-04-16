@@ -57,16 +57,17 @@ export async function middleware(request: NextRequest) {
   let userRole: UserRole = (user.user_metadata?.role as UserRole) || 'user';
   
   // Try to get role from local database
+  let userRecord: any[] = [];
   try {
     const db = getDb();
-    const dbUser = await db
+    userRecord = await db
       .select()
       .from(users)
       .where(eq(users.supabaseUserId, user.id))
       .limit(1);
     
-    if (dbUser[0]?.role) {
-      userRole = dbUser[0].role as UserRole;
+    if (userRecord[0]?.role) {
+      userRole = userRecord[0].role as UserRole;
     }
   } catch {
     // Use metadata role as fallback
@@ -76,6 +77,21 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (!canAccessRoute(userRole, pathname)) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Check profile completeness - redirect to /settings?setup=true if profile is incomplete
+  const settingsPath = '/settings';
+  const isSettingsPage = pathname === settingsPath;
+
+  if (!isSettingsPage && userRecord[0]) {
+    const userProfile = userRecord[0];
+    const isProfileIncomplete = !userProfile.name || userProfile.name.trim() === '';
+
+    if (isProfileIncomplete) {
+      const redirectUrl = new URL(settingsPath, request.url);
+      redirectUrl.searchParams.set('setup', 'true');
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   // Add user info to headers for API routes
