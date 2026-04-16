@@ -5,8 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wallet, Mail, Lock, ArrowRight, AlertCircle, CheckCircle } from "lucide-react";
 
-const supabase = createSupabaseClient();
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -18,21 +16,51 @@ export default function LoginPage() {
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
+  // Create Supabase client inside component for proper lifecycle
+  const supabase = createSupabaseClient();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const trimmedEmail = email.trim().toLowerCase();
+      
+      const { error: authError, data } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Check if email is verified
+      if (!data.user?.email_confirmed_at) {
+        setError("Email belum diverifikasi. Silakan cek inbox email Anda untuk verifikasi.");
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
+
+      // Refresh router to update middleware state
+      router.refresh();
+
+      // Handle redirect parameter if exists
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect') || '/';
+      
+      // Small delay to ensure cookies are set properly
+      setTimeout(() => {
+        router.push(redirectTo);
+      }, 300);
+
+    } catch (err: any) {
+      setError(err.message || "Terjadi kesalahan saat login");
       setLoading(false);
-    } else {
-      router.push("/");
     }
   };
 
@@ -40,17 +68,25 @@ export default function LoginPage() {
     e.preventDefault();
     setResetLoading(true);
     setError("");
+    setResetSent(false);
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/settings?reset=true`,
-    });
+    try {
+      const trimmedEmail = resetEmail.trim().toLowerCase();
+      
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: `${window.location.origin}/settings?reset=true`,
+      });
 
-    if (resetError) {
-      setError(resetError.message);
-    } else {
-      setResetSent(true);
+      if (resetError) {
+        setError(resetError.message);
+      } else {
+        setResetSent(true);
+      }
+    } catch (err: any) {
+      setError(err.message || "Terjadi kesalahan saat mengirim link reset");
+    } finally {
+      setResetLoading(false);
     }
-    setResetLoading(false);
   };
 
   return (

@@ -6,8 +6,18 @@ import {
   users, companySettings
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthenticatedUser(req);
+  if (!auth.user) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+
+  if (!hasPermission(auth.user.role, "backup:create")) {
+    return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
+  }
   try {
     const db = getDb();
 
@@ -55,6 +65,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "backup:restore")) {
+      return NextResponse.json({ error: "Forbidden - Admin only" }, { status: 403 });
+    }
+
     const body = await req.json();
     
     if (!body.tables) {

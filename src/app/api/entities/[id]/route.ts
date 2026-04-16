@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { entities, transactions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "entities:read")) {
+      return NextResponse.json({ error: "Forbidden - No permission" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     const result = await db.select().from(entities).where(eq(entities.id, id));
@@ -28,6 +39,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "entities:update")) {
+      return NextResponse.json({ error: "Forbidden - No permission to update entity" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     const body = await req.json();
@@ -61,6 +81,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "entities:delete")) {
+      return NextResponse.json({ error: "Forbidden - No permission to delete entity" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     

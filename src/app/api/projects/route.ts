@@ -4,6 +4,8 @@ import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
 import { desc, sql } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 const createProjectSchema = z.object({
   name: z.string().min(1, "Nama proyek wajib diisi"),
@@ -14,8 +16,16 @@ const createProjectSchema = z.object({
   endDate: z.string().optional(),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "projects:read")) {
+      return NextResponse.json({ error: "Forbidden - No permission" }, { status: 403 });
+    }
     const db = getDb();
     const allProjects = await db
       .select()
@@ -34,6 +44,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "projects:create")) {
+      return NextResponse.json({ error: "Forbidden - No permission to create project" }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await req.json();
     

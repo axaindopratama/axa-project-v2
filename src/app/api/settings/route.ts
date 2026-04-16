@@ -31,7 +31,7 @@ async function checkAdminRole() {
     .where(eq(users.supabaseUserId, supabaseUser.id))
     .limit(1);
 
-  return userRecord[0]?.role === 'administrator';
+  return userRecord[0]?.role === 'admin';
 }
 
 export async function GET(req: NextRequest) {

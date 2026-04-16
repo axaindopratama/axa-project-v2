@@ -3,9 +3,20 @@ import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { entities } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "entities:read")) {
+      return NextResponse.json({ error: "Forbidden - No permission" }, { status: 403 });
+    }
+
     const db = getDb();
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type");
@@ -35,6 +46,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "entities:create")) {
+      return NextResponse.json({ error: "Forbidden - No permission to create entity" }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await req.json();
     

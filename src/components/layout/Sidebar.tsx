@@ -21,27 +21,41 @@ import {
   User as UserIcon,
 } from "lucide-react";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Proyek", href: "/projects", icon: FolderOpen },
-  { name: "Entitas", href: "/entities", icon: Handshake },
-  { name: "Transaksi", href: "/transactions", icon: CreditCard },
-  { name: "Keuangan", href: "/keuangan", icon: Wallet },
-  { name: "Kanban", href: "/kanban", icon: Kanban },
-  { name: "AI Scanner", href: "/scanner", icon: Scan },
-  { name: "AI Pilot", href: "/ai-chat", icon: Bot },
-  { name: "Pengaturan", href: "/settings", icon: Settings },
-  { name: "Audit Log", href: "/admin/audit", icon: Shield },
+type UserRole = "admin" | "manager" | "user";
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  roles: UserRole[];
+}
+
+const navigation: NavItem[] = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "manager", "user"] },
+  { name: "Proyek", href: "/projects", icon: FolderOpen, roles: ["admin", "manager", "user"] },
+  { name: "Entitas", href: "/entities", icon: Handshake, roles: ["admin", "manager", "user"] },
+  { name: "Transaksi", href: "/transactions", icon: CreditCard, roles: ["admin", "manager", "user"] },
+  { name: "Keuangan", href: "/keuangan", icon: Wallet, roles: ["admin", "manager"] },
+  { name: "Kanban", href: "/kanban", icon: Kanban, roles: ["admin", "manager"] },
+  { name: "AI Scanner", href: "/scanner", icon: Scan, roles: ["admin", "manager"] },
+  { name: "AI Pilot", href: "/ai-chat", icon: Bot, roles: ["admin", "manager", "user"] },
+  { name: "Pengaturan", href: "/settings", icon: Settings, roles: ["admin", "manager", "user"] },
+  { name: "Audit Log", href: "/admin/audit", icon: Shield, roles: ["admin"] },
 ];
 
 export function Sidebar({ className, company, user }: { 
   className?: string, 
   company?: { logo?: string | null, name: string, subtitle: string },
-  user?: { name: string; email: string; avatar?: string }
+  user?: { name: string; email: string; avatar?: string; role?: UserRole | null }
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createSupabaseClient();
+
+  const userRole = user?.role || "user";
+  const filteredNavigation = navigation.filter(item => 
+    item.roles.includes(userRole as UserRole)
+  );
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -78,7 +92,7 @@ export function Sidebar({ className, company, user }: {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1">
-        {navigation.map((item) => {
+        {filteredNavigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link

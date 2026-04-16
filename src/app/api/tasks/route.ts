@@ -2,9 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "tasks:read")) {
+      return NextResponse.json({ error: "Forbidden - No permission" }, { status: 403 });
+    }
+
     const db = getDb();
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get("projectId");
@@ -38,6 +49,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "tasks:create")) {
+      return NextResponse.json({ error: "Forbidden - No permission to create task" }, { status: 403 });
+    }
+
     const db = getDb();
     const body = await req.json();
     

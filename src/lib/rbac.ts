@@ -40,6 +40,29 @@ export function hasPermission(role: UserRole, permission: string): boolean {
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
 }
 
+export function canPerformAction(role: UserRole, action: "create" | "read" | "update" | "delete", resource: string): boolean {
+  const permission = `${resource}:${action}`;
+  return hasPermission(role, permission);
+}
+
+export function canAccessResource(role: UserRole, resource: string): boolean {
+  return hasPermission(role, `${resource}:read`) || 
+         hasPermission(role, `${resource}:create`) ||
+         hasPermission(role, `${resource}:update`) ||
+         hasPermission(role, `${resource}:delete`);
+}
+
+export const resourceToPermission: Record<string, string> = {
+  "/api/projects": "projects",
+  "/api/tasks": "tasks",
+  "/api/transactions": "transactions",
+  "/api/entities": "entities",
+  "/api/settings": "settings",
+  "/api/users": "users",
+  "/api/backup": "backup",
+  "/api/admin": "admin",
+};
+
 export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
   const supabase = createSupabaseClient();
   

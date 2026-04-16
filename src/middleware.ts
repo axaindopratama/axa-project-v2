@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { canAccessRoute, type UserRole } from '@/lib/rbac';
+import { canAccessRoute, hasPermission, type UserRole } from '@/lib/rbac';
+import { createAuditLog } from '@/lib/middleware/auditLog';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
@@ -46,6 +47,44 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Log failed login attempts
+  if (request.nextUrl.pathname === '/login' && request.method === 'POST') {
+    try {
+      const supabase = await createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return request.cookies.get(name)?.value;
+            },
+            set(name: string, value: string, options: CookieOptions) {
+              request.cookies.set({ name, value, ...options });
+              response.cookies.set({ name, value, ...options });
+            },
+            remove(name: string, options: CookieOptions) {
+              request.cookies.set({ name, value: '', ...options });
+              response.cookies.set({ name, value: '', ...options });
+            },
+          },
+        }
+      );
+      const { data: { user: attemptedUser } } = await supabase.auth.getUser();
+      
+      await createAuditLog({
+        action: 'LOGIN',
+        resource: 'auth',
+        details: {
+          success: false,
+          attemptedEmail: request.nextUrl.searchParams.get('email') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
+        },
+      });
+    } catch (error) {
+      console.error('Failed to log failed login attempt:', error);
+    }
+  }
+
   // Protected routes - require auth
   if (!user) {
     const redirectUrl = new URL('/login', request.url);
@@ -53,10 +92,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Get user role from metadata or database
-  let userRole: UserRole = (user.user_metadata?.role as UserRole) || 'user';
+  // Get user role from Supabase profiles table (primary source)
+  let userRole: UserRole = 'user';
   
-  // Try to get role from local database
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.role) {
+      userRole = profile.role as UserRole;
+    } else {
+      // Fallback to metadata
+      userRole = (user.user_metadata?.role as UserRole) || 'user';
+    }
+  } catch {
+    // Fallback to metadata
+    userRole = (user.user_metadata?.role as UserRole) || 'user';
+  }
+  
+  // Try to get local user record for profile completeness check
   let userRecord: any[] = [];
   try {
     const db = getDb();
@@ -65,12 +122,8 @@ export async function middleware(request: NextRequest) {
       .from(users)
       .where(eq(users.supabaseUserId, user.id))
       .limit(1);
-    
-    if (userRecord[0]?.role) {
-      userRole = userRecord[0].role as UserRole;
-    }
   } catch {
-    // Use metadata role as fallback
+    // Continue without local record
   }
 
   // Check route access

@@ -2,12 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { tasks } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/rbac";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "tasks:read")) {
+      return NextResponse.json({ error: "Forbidden - No permission" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     const result = await db.select().from(tasks).where(eq(tasks.id, id));
@@ -28,6 +39,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "tasks:update")) {
+      return NextResponse.json({ error: "Forbidden - No permission to update task" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     const body = await req.json();
@@ -64,6 +84,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth.user) {
+      return NextResponse.json({ error: auth.error }, { status: 401 });
+    }
+
+    if (!hasPermission(auth.user.role, "tasks:delete")) {
+      return NextResponse.json({ error: "Forbidden - No permission to delete task" }, { status: 403 });
+    }
+
     const { id } = await params;
     const db = getDb();
     
