@@ -1,6 +1,5 @@
-import { revalidatePath } from "next/cache";
 import Link from "next/link";
-import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, Clock, ArrowUpRight, ArrowDownRight, Activity, Users, Folder } from "lucide-react";
+import { Plus, TrendingUp, ChevronRight, Wallet as WalletIcon, Clock, Activity, Folder } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { getDb } from "@/lib/db";
 import { projects, transactions, entities } from "@/lib/db/schema";

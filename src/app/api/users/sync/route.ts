@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  const { name, email, phone, role } = await request.json();
+  const { name, phone, role } = await request.json();
   const database = getDb();
 
   // Check if user exists in local database

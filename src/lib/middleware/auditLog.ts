@@ -14,7 +14,7 @@ export interface AuditLogData {
   action: AuditAction;
   resource: string;
   resource_id?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
 }

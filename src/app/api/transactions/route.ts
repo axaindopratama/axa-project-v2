@@ -7,6 +7,10 @@ import { eq, desc } from "drizzle-orm";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/rbac";
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 const createTransactionSchema = z.object({
   projectId: z.string().min(1, "Project ID wajib diisi"),
   entityId: z.string().optional(),
@@ -180,10 +184,10 @@ export async function POST(req: NextRequest) {
     revalidatePath("/");
     
     return NextResponse.json({ data: inserted[0] }, { status: 201 });
-  } catch (error: any) {
-    console.error("Error creating transaction:", error.message, error.stack);
+  } catch (error: unknown) {
+    console.error("Error creating transaction:", getErrorMessage(error));
     return NextResponse.json(
-      { error: `Failed to create transaction: ${error.message}` },
+      { error: `Failed to create transaction: ${getErrorMessage(error)}` },
       { status: 500 }
     );
   }

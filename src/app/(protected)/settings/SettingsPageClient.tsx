@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Database, Bell, Shield, DollarSign, Clock, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
+import { Database, Bell, Shield, DollarSign, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabase/client";
 
 const supabase = createSupabaseClient();
@@ -59,6 +60,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [lastActivityText, setLastActivityText] = useState("-");
 
   const [companyData, setCompanyData] = useState<CompanyData>({
     id: stats.companyData?.id || "",
@@ -88,7 +90,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       // 2. Upload new logo
       const fileExt = file.name.split('.').pop();
       const fileName = `${companyData.id || 'new'}-${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('logo')
         .upload(fileName, file);
 
@@ -115,8 +117,8 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       } else {
         showToast("error", data.error || "Logo terunggah tapi gagal disimpan");
       }
-    } catch (error: any) {
-      showToast("error", "Gagal mengunggah logo: " + error.message);
+    } catch (error: unknown) {
+      showToast("error", `Gagal mengunggah logo: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setSavingCompany(false);
     }
@@ -132,6 +134,10 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
 
   const [newPassword, setNewPassword] = useState("");
   const [isSetupMode, setIsSetupMode] = useState(false);
+
+  useEffect(() => {
+    setLastActivityText(new Date().toLocaleString("id-ID"));
+  }, []);
 
   useEffect(() => {
     // Check for setup mode
@@ -201,7 +207,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       } else {
         showToast("error", data.error || "Gagal menyimpan data perusahaan");
       }
-    } catch (error) {
+    } catch {
       showToast("error", "Terjadi kesalahan saat menyimpan");
     } finally {
       setSavingCompany(false);
@@ -239,7 +245,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       } else {
         showToast("error", data.error || "Gagal menyimpan profil");
       }
-    } catch (error) {
+    } catch {
       showToast("error", "Terjadi kesalahan saat menyimpan");
     } finally {
       setSavingProfile(false);
@@ -262,7 +268,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       document.body.removeChild(a);
       
       showToast("success", `Data ${type} berhasil diekspor!`);
-    } catch (error) {
+    } catch {
       showToast("error", "Gagal mengekspor data");
     }
   };
@@ -283,7 +289,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       document.body.removeChild(a);
       
       showToast("success", "Backup berhasil diunduh!");
-    } catch (error) {
+    } catch {
       showToast("error", "Gagal membuat backup");
     }
   };
@@ -322,6 +328,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
                   Profil Pengguna
                 </h2>
                 <p className="text-xs text-zinc-500">Kelola informasi akun Anda</p>
+                {loadingUser ? <p className="text-xs text-zinc-500 mt-1">Memuat profil...</p> : null}
               </div>
             </div>
 
@@ -412,7 +419,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
                 <label className="text-xs text-zinc-500 block mb-1">Logo Perusahaan</label>
                 <div className="flex items-center gap-4">
                   {companyData.logo && (
-                    <img src={companyData.logo} alt="Logo" className="w-16 h-16 object-contain rounded border border-zinc-700" />
+                    <Image src={companyData.logo} alt="Logo perusahaan" width={64} height={64} unoptimized className="w-16 h-16 object-contain rounded border border-zinc-700" />
                   )}
                   <input
                     type="file"
@@ -720,7 +727,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-zinc-400">Aktivitas Terakhir</span>
-                <span className="text-xs text-zinc-300">{new Date().toLocaleString("id-ID")}</span>
+                <span className="text-xs text-zinc-300">{lastActivityText}</span>
               </div>
             </div>
           </div>

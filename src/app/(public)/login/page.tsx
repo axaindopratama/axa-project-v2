@@ -58,8 +58,8 @@ export default function LoginPage() {
         router.push(redirectTo);
       }, 300);
 
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat login");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat login");
       setLoading(false);
     }
   };
@@ -82,8 +82,8 @@ export default function LoginPage() {
       } else {
         setResetSent(true);
       }
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat mengirim link reset");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat mengirim link reset");
     } finally {
       setResetLoading(false);
     }

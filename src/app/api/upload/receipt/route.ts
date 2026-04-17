@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     
     const fileName = `${projectId || 'general'}/${Date.now()}_${file.name}`;
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from("receipts")
       .upload(fileName, file);
 

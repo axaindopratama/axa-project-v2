@@ -77,10 +77,6 @@ export default async function KeuanganPage() {
   const netBalance = totalIncome - totalExpense - unpaidExpenses;
   
   const projectStats = await getDb().select().from(projects);
-  const totalBudget = projectStats.reduce((sum, p) => sum + p.budget, 0);
-  const usedBudget = totalExpense;
-  const budgetUsagePercent = totalBudget > 0 ? (usedBudget / totalBudget) * 100 : 0;
-
   return (
     <div className="p-10 pt-24 space-y-8">
       <div>

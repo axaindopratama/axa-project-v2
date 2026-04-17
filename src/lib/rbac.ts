@@ -2,6 +2,30 @@ import { createSupabaseClient } from "@/lib/supabase/client";
 
 export type UserRole = "admin" | "manager" | "user";
 
+type SupabaseLikeUser = {
+  app_metadata?: Record<string, unknown> | null;
+  user_metadata?: Record<string, unknown> | null;
+};
+
+export function normalizeUserRole(role: unknown): UserRole {
+  if (typeof role !== "string") return "user";
+
+  const normalized = role.toLowerCase().trim();
+
+  if (normalized === "admin" || normalized === "administrator") return "admin";
+  if (normalized === "manager") return "manager";
+
+  return "user";
+}
+
+export function getSupabaseRoleValue(user: SupabaseLikeUser | null | undefined): unknown {
+  return user?.app_metadata?.role ?? user?.user_metadata?.role;
+}
+
+export function resolveSupabaseUserRole(user: SupabaseLikeUser | null | undefined): UserRole {
+  return normalizeUserRole(getSupabaseRoleValue(user));
+}
+
 export interface UserWithRole {
   id: string;
   email: string;
@@ -73,7 +97,7 @@ export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
       return null;
     }
 
-    const userRole = (supabaseUser.user_metadata?.role as UserRole) || "user";
+    const userRole = resolveSupabaseUserRole(supabaseUser);
     
     return {
       id: supabaseUser.id,
@@ -87,21 +111,34 @@ export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
 }
 
 export function canAccessRoute(role: UserRole, pathname: string): boolean {
-  // Allow all logged-in users to access settings
-  if (pathname.startsWith('/settings')) {
+  const matchRoute = (route: string) => {
+    if (route === "/") return pathname === "/";
+    return pathname === route || pathname.startsWith(`${route}/`);
+  };
+
+  const adminOnlyRoutes = ["/admin/audit", "/admin/users"];
+  const managerAndAboveRoutes = [
+    "/projects",
+    "/entities",
+    "/transactions",
+    "/keuangan",
+    "/kanban",
+    "/scanner",
+  ];
+  const allRoleRoutes = ["/", "/settings", "/help", "/ai-chat"];
+
+  if (adminOnlyRoutes.some(matchRoute)) {
+    return role === "admin";
+  }
+
+  if (managerAndAboveRoutes.some(matchRoute)) {
+    return role === "admin" || role === "manager";
+  }
+
+  if (allRoleRoutes.some(matchRoute)) {
     return true;
   }
 
-  const adminRoutes = ["/users", "/audit"];
-  const managerRoutes = ["/projects", "/projects/new", "/entities", "/entities/new", "/transactions", "/transactions/new", "/keuangan", "/kanban"];
-  
-  if (adminRoutes.some(route => pathname.startsWith(route))) {
-    return role === "admin";
-  }
-  
-  if (managerRoutes.some(route => pathname.startsWith(route))) {
-    return role === "admin" || role === "manager";
-  }
-  
-  return true;
+  // Fallback aman untuk route protected yang belum terdaftar.
+  return role === "admin";
 }

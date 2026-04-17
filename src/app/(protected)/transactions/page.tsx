@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Search, Filter, ArrowUpRight, ArrowDownRight, ChevronRight, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { Skeleton, SkeletonTableRow } from "@/components/ui/Skeleton";
-import { EmptyState, EmptyTransactions } from "@/components/ui/EmptyState";
+import { EmptyTransactions } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 
 interface Transaction {
@@ -31,6 +31,16 @@ interface Entity {
   type: string;
 }
 
+interface ApiTransaction {
+  id: string;
+  date: string;
+  type: string;
+  amount: number;
+  paymentStatus: string;
+  projectId: string;
+  entityId: string | null;
+}
+
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,43 +50,85 @@ export default function TransactionsPage() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  const getApiErrorMessage = async (res: Response, defaultMessage: string) => {
+    let apiMessage = "";
+    try {
+      const body = await res.json();
+      apiMessage = body?.error || body?.message || "";
+    } catch {
+      // ignore parse error, gunakan fallback
+    }
 
-  const fetchTransactions = async () => {
+    if (res.status === 401) return "Sesi Anda berakhir. Silakan login ulang.";
+    if (res.status === 403) return "Anda tidak memiliki akses untuk melihat data transaksi.";
+    if (apiMessage) return apiMessage;
+
+    return `${defaultMessage} (HTTP ${res.status})`;
+  };
+
+  const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/transactions");
-      if (!res.ok) throw new Error("Gagal memuat data transaksi");
+      if (!res.ok) {
+        const errorMessage = await getApiErrorMessage(res, "Gagal memuat data transaksi");
+        throw new Error(errorMessage);
+      }
       const data = await res.json();
       
       const [projectsRes, entitiesRes] = await Promise.all([
         fetch("/api/projects"),
         fetch("/api/entities"),
       ]);
-      
-      const projects: Project[] = (await projectsRes.json()).data || [];
-      const entities: Entity[] = (await entitiesRes.json()).data || [];
+
+      let projects: Project[] = [];
+      let entities: Entity[] = [];
+
+      if (projectsRes.ok) {
+        const projectsData = await projectsRes.json();
+        projects = projectsData.data || [];
+      } else {
+        console.warn("Failed to fetch projects reference data for transactions page", {
+          endpoint: "/api/projects",
+          status: projectsRes.status,
+        });
+      }
+
+      if (entitiesRes.ok) {
+        const entitiesData = await entitiesRes.json();
+        entities = entitiesData.data || [];
+      } else {
+        console.warn("Failed to fetch entities reference data for transactions page", {
+          endpoint: "/api/entities",
+          status: entitiesRes.status,
+        });
+      }
       
       const projectMap = new Map(projects.map((p) => [p.id, p]));
       const entityMap = new Map(entities.map((e) => [e.id, e]));
       
-      const enrichedTransactions = (data.data || []).map((tx: any) => ({
+      const enrichedTransactions = ((data.data || []) as ApiTransaction[]).map((tx) => ({
         ...tx,
         projectName: projectMap.get(tx.projectId)?.name || "Unknown",
-        entityName: tx.entityId ? entityMap.get(tx.entityId)?.name : null,
+        entityName: tx.entityId ? (entityMap.get(tx.entityId)?.name ?? null) : null,
       }));
       
       setTransactions(enrichedTransactions);
       setError(null);
     } catch (err) {
-      console.error("Error fetching transactions:", err);
+      console.error("Error fetching transactions:", {
+        error: err,
+        endpoint: "/api/transactions",
+      });
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const handleDeleteClick = (tx: Transaction) => {
     setSelectedTransaction(tx);

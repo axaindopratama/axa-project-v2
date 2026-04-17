@@ -1,4 +1,4 @@
-import { HelpCircle, BookOpen, MessageCircle, Mail, FileText, ExternalLink } from "lucide-react";
+import { HelpCircle, BookOpen, MessageCircle, Mail } from "lucide-react";
 
 export default function HelpPage() {
   const faqs = [

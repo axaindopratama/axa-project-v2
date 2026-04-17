@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Plus, MoreHorizontal, GripVertical, TrendingUp, TrendingDown, AlertTriangle, X, Trash2, AlertCircle, Loader2, Edit2, ArrowRight, RotateCcw, Play, CheckCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, TrendingUp, TrendingDown, AlertTriangle, X, Trash2, Loader2, Edit2, RotateCcw, Play, CheckCircle } from "lucide-react";
 
 interface Task {
   id: string;
@@ -36,12 +35,6 @@ const columns = [
   { id: "done", title: "Done", color: "bg-emerald-500" },
 ];
 
-const priorities = [
-  { id: "rendah", label: "Rendah", color: "text-emerald-500" },
-  { id: "sedang", label: "Sedang", color: "text-yellow-500" },
-  { id: "tinggi", label: "Tinggi", color: "text-red-500" },
-];
-
 export default function KanbanPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -49,8 +42,6 @@ export default function KanbanPage() {
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
-  
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -68,19 +59,19 @@ export default function KanbanPage() {
   const [costForm, setCostForm] = useState({ actCost: 0, hours: 0 });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchData();
+  const fetchTasks = useCallback(async (projectId: string) => {
+    const res = await fetch(`/api/tasks?projectId=${projectId}`);
+    const data = await res.json();
+    setTasks(data.data || []);
   }, []);
 
-  useEffect(() => {
-    if (selectedProject) {
-      fetchTasks(selectedProject);
-    } else {
-      fetchAllTasks();
-    }
-  }, [selectedProject]);
+  const fetchAllTasks = useCallback(async () => {
+    const res = await fetch("/api/tasks");
+    const data = await res.json();
+    setTasks(data.data || []);
+  }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [projectsRes, employeesRes] = await Promise.all([
         fetch("/api/projects"),
@@ -96,19 +87,19 @@ export default function KanbanPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAllTasks]);
 
-  const fetchTasks = async (projectId: string) => {
-    const res = await fetch(`/api/tasks?projectId=${projectId}`);
-    const data = await res.json();
-    setTasks(data.data || []);
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const fetchAllTasks = async () => {
-    const res = await fetch("/api/tasks");
-    const data = await res.json();
-    setTasks(data.data || []);
-  };
+  useEffect(() => {
+    if (selectedProject) {
+      fetchTasks(selectedProject);
+    } else {
+      fetchAllTasks();
+    }
+  }, [selectedProject, fetchAllTasks, fetchTasks]);
 
   const moveTaskToStatus = async (taskId: string, newStatus: string) => {
     const currentTask = tasks.find(t => t.id === taskId);
@@ -293,26 +284,9 @@ export default function KanbanPage() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString('id-ID');
-  };
-
   const getVariance = (est: number, act: number) => {
     if (est === 0) return 0;
     return ((act - est) / est) * 100;
-  };
-
-  const getPriorityColor = (priority: string) => {
-    if (priority === "tinggi") return "text-red-500";
-    if (priority === "sedang") return "text-yellow-500";
-    return "text-emerald-500";
-  };
-
-  const getPriorityBg = (priority: string) => {
-    if (priority === "tinggi") return "bg-red-500/10 text-red-500";
-    if (priority === "sedang") return "bg-yellow-500/10 text-yellow-500";
-    return "bg-emerald-500/10 text-emerald-500";
   };
 
   if (loading) {

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const db = getDb();
     

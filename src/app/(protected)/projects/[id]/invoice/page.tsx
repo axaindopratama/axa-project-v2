@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Printer, Download, Building2 } from "lucide-react";
+import { ArrowLeft, Printer, Building2 } from "lucide-react";
 
 interface Project {
   id: string;
@@ -44,7 +44,7 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
 
       setProject(projectData.data);
       // Only include expenses for the invoice
-      setTransactions((transactionsData.data || []).filter((t: any) => t.type === 'expense'));
+      setTransactions((transactionsData.data || []).filter((t: Transaction) => t.type === 'expense'));
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {

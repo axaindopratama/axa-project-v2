@@ -1,7 +1,8 @@
 "use client";
 
+import NextImage from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { Upload, Camera, Image, FileText, Check, X, Loader2, AlertCircle, CircleCheck, CircleX, Plus } from "lucide-react";
+import { Upload, Camera, Image as ImageIcon, FileText, Check, X, Loader2, AlertCircle, CircleCheck, CircleX, Plus } from "lucide-react";
 
 interface Project {
   id: string;
@@ -33,10 +34,8 @@ export default function ScannerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showVerify, setShowVerify] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [verifiedData, setVerifiedData] = useState<ScanResult | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   
@@ -113,8 +112,6 @@ export default function ScannerPage() {
     
     setLoading(true);
     setError(null);
-    setResult(null);
-
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -130,7 +127,6 @@ export default function ScannerPage() {
         throw new Error(data.error || `HTTP error: ${res.status}`);
       }
 
-      setResult(data.data);
       setVerifiedData(data.data);
       setShowVerify(true);
       
@@ -145,9 +141,9 @@ export default function ScannerPage() {
         setSelectedEntityId("");
         setNewEntityName(data.data.vendor || "");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Scan error:", err);
-      setError(err.message || "Failed to scan receipt. Please try again.");
+      setError(err instanceof Error ? err.message : "Failed to scan receipt. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -179,8 +175,8 @@ export default function ScannerPage() {
       setSelectedEntityId(data.data.id);
       setShowNewEntityInput(false);
       setToast({ type: "success", message: `Vendor "${newEntityName}" berhasil dibuat!` });
-    } catch (err: any) {
-      setToast({ type: "error", message: err.message || "Gagal membuat vendor" });
+    } catch (err: unknown) {
+      setToast({ type: "error", message: err instanceof Error ? err.message : "Gagal membuat vendor" });
     } finally {
       setIsCreatingEntity(false);
     }
@@ -244,16 +240,15 @@ export default function ScannerPage() {
       setTimeout(() => {
         handleRetake();
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating transaction:", err);
-      setToast({ type: "error", message: err.message || "Gagal membuat transaksi. Silakan coba lagi." });
+      setToast({ type: "error", message: err instanceof Error ? err.message : "Gagal membuat transaksi. Silakan coba lagi." });
     }
   };
 
   const handleRetake = () => {
     setFile(null);
     setPreview(null);
-    setResult(null);
     setVerifiedData(null);
     setError(null);
     setSelectedProjectId("");
@@ -307,7 +302,7 @@ export default function ScannerPage() {
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
               >
-                <Image className="w-4 h-4" />
+                <ImageIcon className="w-4 h-4" />
                 Unggah Gambar
               </button>
               <button
@@ -346,7 +341,7 @@ export default function ScannerPage() {
             <div className="flex items-start gap-6">
               {preview && (
                 <div className="w-48 h-48 rounded-lg overflow-hidden bg-surface-container-high">
-                  <img src={preview} alt="Receipt" className="w-full h-full object-cover" />
+                  <NextImage src={preview} alt="Receipt preview" width={192} height={192} unoptimized className="w-full h-full object-cover" />
                 </div>
               )}
               <div className="flex-1">
@@ -429,7 +424,7 @@ export default function ScannerPage() {
 
             {preview && (
               <div className="mb-6 rounded-lg overflow-hidden">
-                <img src={preview} alt="Receipt" className="w-full max-h-48 object-contain bg-surface-container-high" />
+                <NextImage src={preview} alt="Receipt verification preview" width={768} height={192} unoptimized className="w-full max-h-48 object-contain bg-surface-container-high" />
               </div>
             )}
 

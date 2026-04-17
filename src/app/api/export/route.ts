@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { projects, transactions, entities, tasks } from "@/lib/db/schema";
 
-function convertToCSV(data: any[], headers: string[]): string {
+function convertToCSV(data: Array<Record<string, unknown>>, headers: string[]): string {
   const rows = data.map(row => 
     headers.map(header => {
       const value = row[header];
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type");
 
-    let data: any[] = [];
+    let data: Array<Record<string, unknown>> = [];
     let filename = "export.csv";
     let headers: string[] = [];
 

@@ -26,14 +26,26 @@ interface Project {
 
 const COLORS = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899"];
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+type TooltipPayloadEntry = {
+  color?: string;
+  name?: string;
+  value?: number;
+};
+
+type CustomTooltipProps = {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+};
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-surface-container-highest p-3 rounded-lg shadow-xl border border-zinc-700">
         <p className="text-zinc-400 text-xs font-bold uppercase mb-1">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <p key={index} className={`text-sm font-bold ${entry.color === '#10b981' ? 'text-emerald-500' : entry.color === '#ef4444' ? 'text-red-500' : 'text-primary'}`}>
-            {entry.name}: {formatCurrency(entry.value)}
+            {entry.name}: {formatCurrency(entry.value || 0)}
           </p>
         ))}
       </div>

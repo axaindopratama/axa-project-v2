@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db";
 import { entities } from "@/lib/db/schema";
 import { Suspense } from "react";
 import { SkeletonCard } from "@/components/ui/Skeleton";
-import { EmptyState, EmptyEntities } from "@/components/ui/EmptyState";
+import { EmptyEntities } from "@/components/ui/EmptyState";
 
 export const dynamic = "force-dynamic";
 

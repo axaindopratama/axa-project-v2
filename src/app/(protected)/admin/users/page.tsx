@@ -2,6 +2,9 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Plus, Pencil, Trash2, Shield, ArrowLeft } from 'lucide-react';
+import { getDb } from '@/lib/db';
+import { users } from '@/lib/db/schema';
+import { desc, eq } from 'drizzle-orm';
 
 export default async function AdminUsersPage() {
   const supabase = await createSupabaseServerClient();
@@ -11,22 +14,33 @@ export default async function AdminUsersPage() {
     redirect('/login');
   }
 
-  // Check admin role
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, name')
-    .eq('id', user.id)
-    .single();
+  const db = getDb();
 
-  if (profile?.role !== 'admin') {
+  // Check admin role from Turso users
+  const currentUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.supabaseUserId, user.id))
+    .limit(1);
+
+  if (!currentUser[0] || currentUser[0].role !== 'admin') {
     redirect('/');
   }
 
-  // Fetch all users
-  const { data: users } = await supabase
-    .from('profiles')
-    .select('id, name, email, phone, role, created_at, last_login')
-    .order('created_at', { ascending: false });
+  // Fetch all users from Turso
+  const allUsers = await db
+    .select({
+      id: users.id,
+      supabaseUserId: users.supabaseUserId,
+      name: users.name,
+      email: users.email,
+      phone: users.phone,
+      role: users.role,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .orderBy(desc(users.createdAt));
 
   return (
     <div className="p-6 lg:p-10 pt-24 min-h-screen">
@@ -70,7 +84,7 @@ export default async function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700">
-              {users?.map((u) => (
+              {allUsers?.map((u) => (
                 <tr key={u.id} className="hover:bg-surface-container-high transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -92,16 +106,18 @@ export default async function AdminUsersPage() {
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold ${
                       u.role === 'admin' 
                         ? 'bg-purple-500/20 text-purple-400' 
+                        : u.role === 'manager'
+                        ? 'bg-blue-500/20 text-blue-400'
                         : 'bg-zinc-500/20 text-zinc-400'
                     }`}>
                       <Shield className="w-3 h-3" />
-                      {u.role === 'admin' ? 'Admin' : 'Pengguna'}
+                      {u.role === 'admin' ? 'Admin' : u.role === 'manager' ? 'Manager' : 'Pengguna'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <p className="text-sm text-zinc-400">
-                      {u.last_login 
-                        ? new Date(u.last_login).toLocaleDateString('id-ID', {
+                      {u.updatedAt
+                        ? new Date(u.updatedAt).toLocaleDateString('id-ID', {
                             day: 'numeric',
                             month: 'short',
                             year: 'numeric',
@@ -118,7 +134,7 @@ export default async function AdminUsersPage() {
                       </button>
                       <button 
                         className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-zinc-400 hover:text-red-400"
-                        disabled={u.id === user.id}
+                        disabled={u.supabaseUserId === user.id}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -126,7 +142,7 @@ export default async function AdminUsersPage() {
                   </td>
                 </tr>
               ))}
-              {(!users || users.length === 0) && (
+              {(!allUsers || allUsers.length === 0) && (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
                     <Users className="w-12 h-12 text-zinc-600 mx-auto mb-3" />

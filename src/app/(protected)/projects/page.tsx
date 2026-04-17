@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Search, Filter, ChevronRight, Trash2, AlertTriangle, Loader2 } from "lucide-react";
-import { Skeleton, SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
-import { EmptyState, EmptyProjects } from "@/components/ui/EmptyState";
-import { ErrorState, ErrorCard } from "@/components/ui/ErrorState";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
+import { EmptyProjects } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 interface Project {
   id: string;
@@ -27,30 +27,47 @@ export default function ProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  const getApiErrorMessage = async (res: Response, defaultMessage: string) => {
+    let apiMessage = "";
+    try {
+      const body = await res.json();
+      apiMessage = body?.error || body?.message || "";
+    } catch {
+      // ignore parse error, pakai fallback
+    }
 
-  const fetchProjects = async () => {
+    if (res.status === 401) return "Sesi Anda berakhir. Silakan login ulang.";
+    if (res.status === 403) return "Anda tidak memiliki akses untuk melihat data proyek.";
+    if (apiMessage) return apiMessage;
+
+    return `${defaultMessage} (HTTP ${res.status})`;
+  };
+
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/projects");
-      if (!res.ok) throw new Error("Gagal memuat data proyek");
+      if (!res.ok) {
+        const errorMessage = await getApiErrorMessage(res, "Gagal memuat data proyek");
+        throw new Error(errorMessage);
+      }
       const data = await res.json();
       setProjects(data.data || []);
       setError(null);
     } catch (err) {
-      console.error("Error fetching projects:", err);
+      console.error("Error fetching projects:", {
+        error: err,
+        endpoint: "/api/projects",
+      });
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleDeleteClick = (project: Project) => {
-    setSelectedProject(project);
-    setShowDeleteModal(true);
-  };
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleDelete = async () => {
     if (!selectedProject) return;

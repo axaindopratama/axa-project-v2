@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -65,9 +69,10 @@ If you cannot extract certain fields, use reasonable defaults. All monetary valu
           }
         })
       });
-    } catch (fetchError: any) {
-      console.error("Fetch error:", fetchError.message);
-      throw new Error(`Network error: ${fetchError.message}`);
+    } catch (fetchError: unknown) {
+      const message = getErrorMessage(fetchError);
+      console.error("Fetch error:", message);
+      throw new Error(`Network error: ${message}`);
     }
 
     console.log("Gemini response status:", response.status);
@@ -103,16 +108,20 @@ If you cannot extract certain fields, use reasonable defaults. All monetary valu
     const parsed = JSON.parse(jsonMatch[0]);
     console.log("Parsed data:", JSON.stringify(parsed));
     return NextResponse.json({ data: parsed });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("=== Full error details ===");
-    console.error("Error name:", error?.name);
-    console.error("Error message:", error?.message);
-    console.error("Error stack:", error?.stack);
-    console.error("Error toString:", error?.toString());
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("Error toString:", error.toString());
+    } else {
+      console.error("Non-Error thrown:", error);
+    }
     console.error("Full error:", error);
     console.error("===========================");
     
-    const errorMessage = error?.message || error?.toString() || "Unknown error";
+    const errorMessage = getErrorMessage(error);
     return NextResponse.json(
       { error: `Failed to scan receipt: ${errorMessage}` },
       { status: 500 }

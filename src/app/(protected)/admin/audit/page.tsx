@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/db";
 import { auditLogs, users, projects } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { Shield, User as UserIcon, Clock } from "lucide-react";
 import { AuditLogDetailModal } from "@/components/admin/AuditLogDetailModal";
 

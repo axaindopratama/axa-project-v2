@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createSupabaseClient } from "@/lib/supabase/client";
+import { normalizeUserRole } from "@/lib/rbac";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -52,7 +54,7 @@ export function Sidebar({ className, company, user }: {
   const router = useRouter();
   const supabase = createSupabaseClient();
 
-  const userRole = user?.role || "user";
+  const userRole = normalizeUserRole(user?.role);
   const filteredNavigation = navigation.filter(item => 
     item.roles.includes(userRole as UserRole)
   );
@@ -74,7 +76,7 @@ export function Sidebar({ className, company, user }: {
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 gold-gradient flex items-center justify-center rounded overflow-hidden">
             {company?.logo ? (
-              <img src={company.logo} alt={company.name} className="w-full h-full object-cover" />
+              <Image src={company.logo} alt={company.name} width={32} height={32} unoptimized className="w-full h-full object-cover" />
             ) : (
               <Wallet className="w-5 h-5 text-on-primary" />
             )}

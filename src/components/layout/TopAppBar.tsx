@@ -1,9 +1,9 @@
 "use client";
 
 import { createSupabaseClient } from "@/lib/supabase/client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, User, LogOut, Settings, X, Loader2 } from "lucide-react";
+import { Search, Bell, User, LogOut, Settings, Loader2 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 
 interface Notification {
@@ -35,6 +35,34 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  const fetchUser = useCallback(async () => {
+    try {
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+      if (supabaseUser) {
+        setUser({
+          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
+          email: supabaseUser.email || '',
+          avatar: supabaseUser.user_metadata?.avatar_url
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [supabase]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoadingNotifications(true);
+      const res = await fetch("/api/notifications");
+      const data = await res.json();
+      setNotifications(data.data || []);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUser();
     fetchNotifications();
@@ -50,32 +78,7 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
     
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const fetchUser = async () => {
-    try {
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-      if (supabaseUser) {
-        setUser({
-          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User',
-          email: supabaseUser.email || '',
-          avatar: supabaseUser.user_metadata?.avatar_url
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
-  };
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch("/api/notifications");
-      const data = await res.json();
-      setNotifications(data.data || []);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
+  }, [fetchNotifications, fetchUser]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

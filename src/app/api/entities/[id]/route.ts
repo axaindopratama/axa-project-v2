@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { entities, transactions } from "@/lib/db/schema";
+import { entities } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/rbac";

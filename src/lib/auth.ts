@@ -1,4 +1,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logAccessDenied } from "@/lib/audit";
+import { getOrProvisionAppUser } from "@/lib/userProvisioning";
+import { resolveSupabaseUserRole } from "@/lib/rbac";
 
 export type UserRole = "admin" | "manager" | "user";
 
@@ -14,7 +17,7 @@ export interface AuthResponse {
   error?: string;
 }
 
-export async function getAuthenticatedUser(request: Request): Promise<AuthResponse> {
+export async function getAuthenticatedUser(_request: Request): Promise<AuthResponse> {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -23,24 +26,30 @@ export async function getAuthenticatedUser(request: Request): Promise<AuthRespon
       return { user: null, error: "Unauthorized" };
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("name, role")
-      .eq("id", user.id)
-      .single();
+    let appUser;
+    try {
+      appUser = await getOrProvisionAppUser(user);
+    } catch (error) {
+      await logAccessDenied({
+        userId: user.id,
+        path: "api_auth_guard",
+        method: _request.method,
+        role: resolveSupabaseUserRole(user),
+        reason: "user_provisioning_failed",
+        metadata: {
+          message: error instanceof Error ? error.message : "unknown_error",
+        },
+      });
 
-    if (profileError || !profile) {
-      return { user: null, error: "Profile not found" };
+      return { user: null, error: "User profile setup required" };
     }
-
-    const userRole = (profile.role as UserRole) || "user";
 
     return {
       user: {
         id: user.id,
         email: user.email || "",
-        name: profile.name || user.email?.split("@")[0] || "User",
-        role: userRole,
+        name: appUser.name,
+        role: appUser.role,
       },
     };
   } catch (error) {
