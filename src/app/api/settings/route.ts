@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { users, companySettings, auditLogs } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 async function getCurrentUser() {
   const supabase = await createSupabaseServerClient();
@@ -18,6 +19,25 @@ async function getCurrentUser() {
   
   return userRecord[0] || null;
 }
+
+async function getAuthenticatedSupabaseUser() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user: supabaseUser },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !supabaseUser) return null;
+  return supabaseUser;
+}
+
+const updateProfileSchema = z
+  .object({
+    name: z.string().trim().min(1, "Nama wajib diisi"),
+    phone: z.string().trim().optional().nullable(),
+    avatar: z.string().trim().optional().nullable(),
+  })
+  .strict();
 
 async function checkAdminRole() {
   const supabase = await createSupabaseServerClient();
@@ -57,11 +77,25 @@ export async function GET(req: NextRequest) {
     
     // Get current user's profile
     if (type === "profile") {
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
+      const supabaseUser = await getAuthenticatedSupabaseUser();
+      if (!supabaseUser) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      return NextResponse.json({ data: currentUser });
+
+      const currentUser = await getCurrentUser();
+
+      return NextResponse.json({
+        data: {
+          id: currentUser?.id ?? null,
+          supabaseUserId: supabaseUser.id,
+          name: currentUser?.name ?? "",
+          email: currentUser?.email ?? supabaseUser.email ?? "",
+          phone: currentUser?.phone ?? "",
+          role: currentUser?.role ?? "user",
+          avatar: currentUser?.avatar ?? null,
+          isProvisioned: Boolean(currentUser),
+        },
+      });
     }
 
     const result = await db.select().from(users).orderBy(desc(users.createdAt));
@@ -84,22 +118,28 @@ export async function PUT(req: NextRequest) {
     }
 
     if (type === "user") {
-      const { id, name, email, phone, avatar } = body;
-      
-      if (!name || !name.trim()) {
-        return NextResponse.json({ error: "Nama wajib diisi" }, { status: 400 });
+      const supabaseUser = await getAuthenticatedSupabaseUser();
+      if (!supabaseUser) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
-      if (!email || !email.trim()) {
-        return NextResponse.json({ error: "Email wajib diisi" }, { status: 400 });
+
+      const parsed = updateProfileSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Payload profil tidak valid", details: parsed.error.issues },
+          { status: 400 }
+        );
       }
-      if (!id) {
-        return NextResponse.json({ error: "ID pengguna diperlukan" }, { status: 400 });
-      }
+
+      const { name, phone, avatar } = parsed.data;
+      const normalizedPhone = phone === null ? null : (phone?.trim() || null);
+      const normalizedAvatar = avatar === null ? null : (avatar?.trim() || null);
+      const normalizedEmail = supabaseUser.email ?? "";
 
       const existing = await db
         .select()
         .from(users)
-        .where(eq(users.id, id))
+        .where(eq(users.supabaseUserId, supabaseUser.id))
         .limit(1);
 
       let result;
@@ -108,23 +148,23 @@ export async function PUT(req: NextRequest) {
           .update(users)
           .set({
             name,
-            email,
-            phone,
-            avatar,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            avatar: normalizedAvatar,
             updatedAt: new Date().toISOString(),
           })
-          .where(eq(users.id, id))
+          .where(eq(users.id, existing[0].id))
           .returning();
       } else {
         result = await db
           .insert(users)
           .values({
             id: crypto.randomUUID(),
-            supabaseUserId: id,
+            supabaseUserId: supabaseUser.id,
             name,
-            email,
-            phone,
-            avatar,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            avatar: normalizedAvatar,
             role: "user",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -134,11 +174,16 @@ export async function PUT(req: NextRequest) {
 
       await db.insert(auditLogs).values({
         id: crypto.randomUUID(),
-        userId: id,
-        action: "update",
+        userId: supabaseUser.id,
+        action: "PROFILE_UPDATE",
         tableName: "users",
-        recordId: id,
-        newValue: JSON.stringify({ name, email, phone }),
+        recordId: result[0].id,
+        newValue: JSON.stringify({
+          name,
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          avatar: normalizedAvatar,
+        }),
         createdAt: new Date().toISOString(),
       });
 
@@ -152,6 +197,14 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ error: "Nama perusahaan wajib diisi" }, { status: 400 });
       }
 
+      const normalizedCompanyName = companyName.trim();
+      const normalizedCompanySubtitle = typeof companySubtitle === "string" ? companySubtitle.trim() : companySubtitle;
+      const normalizedCompanyAddress = typeof companyAddress === "string" ? companyAddress.trim() : companyAddress;
+      const normalizedCompanyPhone = typeof companyPhone === "string" ? companyPhone.trim() : companyPhone;
+      const normalizedCompanyEmail = typeof companyEmail === "string" ? companyEmail.trim() : companyEmail;
+      const normalizedCompanyNpwp = typeof companyNpwp === "string" ? companyNpwp.trim() : companyNpwp;
+      const normalizedLogo = typeof logo === "string" ? (logo.trim() || null) : null;
+
       const existing = await db.select().from(companySettings).limit(1);
 
       let result;
@@ -159,13 +212,13 @@ export async function PUT(req: NextRequest) {
         result = await db
           .update(companySettings)
           .set({
-            companyName,
-            companySubtitle,
-            companyAddress,
-            companyPhone,
-            companyEmail,
-            companyNpwp,
-            logo,
+            companyName: normalizedCompanyName,
+            companySubtitle: normalizedCompanySubtitle,
+            companyAddress: normalizedCompanyAddress,
+            companyPhone: normalizedCompanyPhone,
+            companyEmail: normalizedCompanyEmail,
+            companyNpwp: normalizedCompanyNpwp,
+            logo: normalizedLogo,
             updatedAt: new Date().toISOString(),
           })
           .where(eq(companySettings.id, existing[0].id))
@@ -175,13 +228,13 @@ export async function PUT(req: NextRequest) {
           .insert(companySettings)
           .values({
             id: id || crypto.randomUUID(),
-            companyName,
-            companySubtitle,
-            companyAddress,
-            companyPhone,
-            companyEmail,
-            companyNpwp,
-            logo,
+            companyName: normalizedCompanyName,
+            companySubtitle: normalizedCompanySubtitle,
+            companyAddress: normalizedCompanyAddress,
+            companyPhone: normalizedCompanyPhone,
+            companyEmail: normalizedCompanyEmail,
+            companyNpwp: normalizedCompanyNpwp,
+            logo: normalizedLogo,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           })
@@ -206,7 +259,11 @@ export async function POST(req: NextRequest) {
     const type = searchParams.get("type");
 
     if (type === "create-user") {
-      const { supabaseUserId, name, email, role, phone } = body;
+      if (!(await checkAdminRole())) {
+        return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+      }
+
+      const { supabaseUserId, name, email, phone } = body;
       
       if (!supabaseUserId || !name || !email) {
         return NextResponse.json({ error: "Data tidak lengkap" }, { status: 400 });
@@ -229,7 +286,7 @@ export async function POST(req: NextRequest) {
           supabaseUserId,
           name,
           email,
-          role: role || "user",
+          role: "user",
           phone,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -242,7 +299,7 @@ export async function POST(req: NextRequest) {
         action: "create",
         tableName: "users",
         recordId: result[0].id,
-        newValue: JSON.stringify({ name, email, role }),
+        newValue: JSON.stringify({ name, email, role: "user" }),
         createdAt: new Date().toISOString(),
       });
 

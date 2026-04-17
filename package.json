@@ -6,7 +6,10 @@
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "rbac:guard:metadata-role": "bash -lc \"if grep -RInE --include='*.ts' --include='*.tsx' 'user_metadata\\.role|app_metadata\\.role' src --exclude='rbac.ts'; then echo 'RBAC guard failed: direct metadata role read detected outside src/lib/rbac.ts'; exit 1; else echo 'RBAC guard passed: no direct metadata role read outside helper'; fi\"",
+    "rbac:quality-gate": "node scripts/rbac-quality-gate.mjs",
+    "rbac:ci": "npm run lint && npm run rbac:guard:metadata-role && npm run rbac:quality-gate"
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",

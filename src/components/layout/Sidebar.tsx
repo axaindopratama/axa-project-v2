@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { createSupabaseClient } from "@/lib/supabase/client";
-import { normalizeUserRole } from "@/lib/rbac";
+import { hasPermission, normalizeUserRole } from "@/lib/rbac";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -29,20 +29,20 @@ interface NavItem {
   name: string;
   href: string;
   icon: React.ElementType;
-  roles: UserRole[];
+  requiredPermission?: string;
 }
 
 const navigation: NavItem[] = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "manager", "user"] },
-  { name: "Proyek", href: "/projects", icon: FolderOpen, roles: ["admin", "manager", "user"] },
-  { name: "Entitas", href: "/entities", icon: Handshake, roles: ["admin", "manager", "user"] },
-  { name: "Transaksi", href: "/transactions", icon: CreditCard, roles: ["admin", "manager", "user"] },
-  { name: "Keuangan", href: "/keuangan", icon: Wallet, roles: ["admin", "manager"] },
-  { name: "Kanban", href: "/kanban", icon: Kanban, roles: ["admin", "manager"] },
-  { name: "AI Scanner", href: "/scanner", icon: Scan, roles: ["admin", "manager"] },
-  { name: "AI Pilot", href: "/ai-chat", icon: Bot, roles: ["admin", "manager", "user"] },
-  { name: "Pengaturan", href: "/settings", icon: Settings, roles: ["admin", "manager", "user"] },
-  { name: "Audit Log", href: "/admin/audit", icon: Shield, roles: ["admin"] },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Proyek", href: "/projects", icon: FolderOpen, requiredPermission: "projects:read" },
+  { name: "Entitas", href: "/entities", icon: Handshake, requiredPermission: "entities:read" },
+  { name: "Transaksi", href: "/transactions", icon: CreditCard, requiredPermission: "transactions:read" },
+  { name: "Keuangan", href: "/keuangan", icon: Wallet, requiredPermission: "transactions:read" },
+  { name: "Kanban", href: "/kanban", icon: Kanban, requiredPermission: "tasks:read" },
+  { name: "AI Scanner", href: "/scanner", icon: Scan, requiredPermission: "tasks:read" },
+  { name: "AI Pilot", href: "/ai-chat", icon: Bot },
+  { name: "Pengaturan", href: "/settings", icon: Settings, requiredPermission: "settings:read" },
+  { name: "Audit Log", href: "/admin/audit", icon: Shield, requiredPermission: "audit:read" },
 ];
 
 export function Sidebar({ className, company, user }: { 
@@ -55,8 +55,8 @@ export function Sidebar({ className, company, user }: {
   const supabase = createSupabaseClient();
 
   const userRole = normalizeUserRole(user?.role);
-  const filteredNavigation = navigation.filter(item => 
-    item.roles.includes(userRole as UserRole)
+  const filteredNavigation = navigation.filter((item) =>
+    !item.requiredPermission || hasPermission(userRole, item.requiredPermission)
   );
 
   const handleLogout = async () => {
@@ -74,7 +74,7 @@ export function Sidebar({ className, company, user }: {
       {/* Logo */}
       <div className="px-8 mb-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 gold-gradient flex items-center justify-center rounded overflow-hidden">
+          <div className="w-8 h-8 bg-transparent flex items-center justify-center rounded overflow-hidden">
             {company?.logo ? (
               <Image src={company.logo} alt={company.name} width={32} height={32} unoptimized className="w-full h-full object-cover" />
             ) : (
@@ -118,8 +118,21 @@ export function Sidebar({ className, company, user }: {
       <div className="px-8 mt-auto space-y-4">
         {/* User Info */}
         <div className="flex items-center gap-3 p-3 bg-surface-container-highest rounded-lg mb-4">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-            {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="w-4 h-4" />}
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs overflow-hidden">
+            {user?.avatar ? (
+              <Image
+                src={user.avatar}
+                alt={user?.name ? `Avatar ${user.name}` : "Avatar pengguna"}
+                width={32}
+                height={32}
+                unoptimized
+                className="w-full h-full object-cover"
+              />
+            ) : user?.name ? (
+              user.name.charAt(0).toUpperCase()
+            ) : (
+              <UserIcon className="w-4 h-4" />
+            )}
           </div>
           <div className="flex-1 overflow-hidden">
             <p className="text-xs font-bold text-on-surface truncate">{user?.name || "User"}</p>

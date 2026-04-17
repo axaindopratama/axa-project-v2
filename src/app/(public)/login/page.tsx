@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { createSupabaseClient } from "@/lib/supabase/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wallet, Mail, Lock, ArrowRight, AlertCircle, CheckCircle } from "lucide-react";
 
@@ -15,9 +16,39 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("AXA PROJECT");
+  const [companySubtitle, setCompanySubtitle] = useState("CV. AXA INDO PRATAMA");
 
   // Create Supabase client inside component for proper lifecycle
   const supabase = createSupabaseClient();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchCompany = async () => {
+      try {
+        const res = await fetch("/api/public/company");
+        if (!res.ok) return;
+
+        const payload = await res.json();
+        const data = payload?.data;
+        if (!mounted || !data) return;
+
+        setCompanyLogo(typeof data.logo === "string" && data.logo.trim() ? data.logo.trim() : null);
+        setCompanyName(typeof data.companyName === "string" && data.companyName.trim() ? data.companyName.trim().toUpperCase() : "AXA PROJECT");
+        setCompanySubtitle(typeof data.companySubtitle === "string" && data.companySubtitle.trim() ? data.companySubtitle.trim() : "CV. AXA INDO PRATAMA");
+      } catch {
+        // keep fallback branding when request fails
+      }
+    };
+
+    fetchCompany();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +105,7 @@ export default function LoginPage() {
       const trimmedEmail = resetEmail.trim().toLowerCase();
       
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: `${window.location.origin}/settings?reset=true`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (resetError) {
@@ -98,14 +129,25 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 gold-gradient rounded-2xl mb-6">
-            <Wallet className="w-8 h-8 text-on-primary" />
+          <div className="inline-flex items-center justify-center w-48 h-36 bg-transparent rounded-2xl mb-0 overflow-hidden">
+            {companyLogo ? (
+              <Image
+                src={companyLogo}
+                alt={companyName}
+                width={192}
+                height={192}
+                unoptimized
+                className="w-full h-full object-contain rounded-2xl scale-125"
+              />
+            ) : (
+              <Wallet className="w-8 h-8 text-on-primary" />
+            )}
           </div>
-          <h1 className="text-3xl font-headline font-black text-primary uppercase tracking-tight">
-            AXA PROJECT
+          <h1 className="-mt-4 text-3xl font-headline font-black text-primary uppercase tracking-tight leading-none">
+            {companyName}
           </h1>
-          <p className="text-zinc-500 font-medium tracking-widest mt-2">
-            CV. AXA INDO PRATAMA
+          <p className="text-zinc-500 font-medium tracking-widest mt-0 leading-none">
+            {companySubtitle}
           </p>
         </div>
 

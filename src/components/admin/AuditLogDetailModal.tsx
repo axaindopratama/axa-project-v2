@@ -10,13 +10,17 @@ type AuditLogDetailModalProps = {
 };
 
 export function AuditLogDetailModal({
-  action: _action,
-  oldValue: _oldValue,
-  newValue: _newValue,
+  action,
+  oldValue,
+  newValue,
 }: AuditLogDetailModalProps) {
+  const hasDetails = Boolean(oldValue || newValue);
+
   return (
-    <div className="text-xs text-zinc-500">
-      (Dialog components missing)
+    <div className="text-xs text-zinc-500 space-y-1">
+      <p className="font-medium text-zinc-400">{action}</p>
+      <p>{hasDetails ? "Detail tersedia" : "Tidak ada detail perubahan"}</p>
+      <p>(Dialog components missing)</p>
     </div>
   );
 }

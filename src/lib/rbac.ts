@@ -1,5 +1,3 @@
-import { createSupabaseClient } from "@/lib/supabase/client";
-
 export type UserRole = "admin" | "manager" | "user";
 
 type SupabaseLikeUser = {
@@ -26,13 +24,6 @@ export function resolveSupabaseUserRole(user: SupabaseLikeUser | null | undefine
   return normalizeUserRole(getSupabaseRoleValue(user));
 }
 
-export interface UserWithRole {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-}
-
 export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   admin: [
     "projects:create", "projects:read", "projects:update", "projects:delete",
@@ -50,7 +41,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "transactions:create", "transactions:read", "transactions:update", "transactions:delete",
     "entities:create", "entities:read", "entities:update", "entities:delete",
     "settings:read",
-    "audit:read",
   ],
   user: [
     "projects:read",
@@ -59,6 +49,21 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "entities:read",
   ],
 };
+
+export const ROUTE_PERMISSIONS: Array<{ path: string; permission?: string }> = [
+  { path: "/", permission: undefined },
+  { path: "/help", permission: undefined },
+  { path: "/settings", permission: "settings:read" },
+  { path: "/projects", permission: "projects:read" },
+  { path: "/entities", permission: "entities:read" },
+  { path: "/transactions", permission: "transactions:read" },
+  { path: "/keuangan", permission: "transactions:read" },
+  { path: "/kanban", permission: "tasks:read" },
+  { path: "/scanner", permission: "tasks:read" },
+  { path: "/ai-chat", permission: undefined },
+  { path: "/admin/audit", permission: "audit:read" },
+  { path: "/admin/users", permission: "users:read" },
+];
 
 export function hasPermission(role: UserRole, permission: string): boolean {
   return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
@@ -87,56 +92,16 @@ export const resourceToPermission: Record<string, string> = {
   "/api/admin": "admin",
 };
 
-export async function getCurrentUserWithRole(): Promise<UserWithRole | null> {
-  const supabase = createSupabaseClient();
-  
-  try {
-    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-    
-    if (!supabaseUser) {
-      return null;
-    }
-
-    const userRole = resolveSupabaseUserRole(supabaseUser);
-    
-    return {
-      id: supabaseUser.id,
-      email: supabaseUser.email || "",
-      name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || "User",
-      role: userRole,
-    };
-  } catch {
-    return null;
-  }
-}
-
 export function canAccessRoute(role: UserRole, pathname: string): boolean {
   const matchRoute = (route: string) => {
     if (route === "/") return pathname === "/";
     return pathname === route || pathname.startsWith(`${route}/`);
   };
 
-  const adminOnlyRoutes = ["/admin/audit", "/admin/users"];
-  const managerAndAboveRoutes = [
-    "/projects",
-    "/entities",
-    "/transactions",
-    "/keuangan",
-    "/kanban",
-    "/scanner",
-  ];
-  const allRoleRoutes = ["/", "/settings", "/help", "/ai-chat"];
-
-  if (adminOnlyRoutes.some(matchRoute)) {
-    return role === "admin";
-  }
-
-  if (managerAndAboveRoutes.some(matchRoute)) {
-    return role === "admin" || role === "manager";
-  }
-
-  if (allRoleRoutes.some(matchRoute)) {
-    return true;
+  const matchedPolicy = ROUTE_PERMISSIONS.find(({ path }) => matchRoute(path));
+  if (matchedPolicy) {
+    if (!matchedPolicy.permission) return true;
+    return hasPermission(role, matchedPolicy.permission);
   }
 
   // Fallback aman untuk route protected yang belum terdaftar.

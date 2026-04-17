@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { logAccessDenied } from "@/lib/audit";
+import { logRbacDecision } from "@/lib/audit";
 import { getOrProvisionAppUser } from "@/lib/userProvisioning";
 import { resolveSupabaseUserRole } from "@/lib/rbac";
 
@@ -23,6 +23,18 @@ export async function getAuthenticatedUser(_request: Request): Promise<AuthRespo
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      await logRbacDecision({
+        path: "api_auth_guard",
+        method: _request.method,
+        effectiveRole: null,
+        roleSource: "unknown",
+        decision: "DENY",
+        reason: "unauthenticated_api_request",
+        metadata: {
+          hasAuthError: Boolean(authError),
+        },
+      });
+
       return { user: null, error: "Unauthorized" };
     }
 
@@ -30,11 +42,13 @@ export async function getAuthenticatedUser(_request: Request): Promise<AuthRespo
     try {
       appUser = await getOrProvisionAppUser(user);
     } catch (error) {
-      await logAccessDenied({
+      await logRbacDecision({
         userId: user.id,
         path: "api_auth_guard",
         method: _request.method,
-        role: resolveSupabaseUserRole(user),
+        effectiveRole: resolveSupabaseUserRole(user),
+        roleSource: "supabase_metadata",
+        decision: "DENY",
         reason: "user_provisioning_failed",
         metadata: {
           message: error instanceof Error ? error.message : "unknown_error",
@@ -43,6 +57,16 @@ export async function getAuthenticatedUser(_request: Request): Promise<AuthRespo
 
       return { user: null, error: "User profile setup required" };
     }
+
+    await logRbacDecision({
+      userId: user.id,
+      path: "api_auth_guard",
+      method: _request.method,
+      effectiveRole: appUser.role,
+      roleSource: "turso",
+      decision: "ALLOW",
+      reason: "api_auth_guard_authenticated",
+    });
 
     return {
       user: {

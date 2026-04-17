@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  const { name, phone, role } = await request.json();
+  const { name, phone } = await request.json();
   const database = getDb();
 
   // Check if user exists in local database
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       supabaseUserId: user.id,
       email: user.email!,
       name: name,
-      role: role || 'user',
+      role: 'user',
       phone: phone,
       createdAt: now,
       updatedAt: now,

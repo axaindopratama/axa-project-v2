@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { canAccessRoute, resolveSupabaseUserRole, type UserRole } from '@/lib/rbac';
 import { getOrProvisionAppUser } from '@/lib/userProvisioning';
-import { logAccessDenied } from '@/lib/audit';
+import { logRbacDecision } from '@/lib/audit';
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Public routes - allow access
-  const publicRoutes = ['/login', '/api/auth'];
+  const publicRoutes = ['/login', '/reset-password', '/api/auth', '/api/public'];
   if (publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))) {
     // If logged in, redirect to dashboard
     if (user && request.nextUrl.pathname === '/login') {
@@ -62,11 +62,13 @@ export async function middleware(request: NextRequest) {
     userRole = appUser.role;
   } catch (error) {
     // Hardening: block request when Turso context cannot be ensured.
-    await logAccessDenied({
+    await logRbacDecision({
       userId: user.id,
       path: pathname,
       method: request.method,
-      role: resolveSupabaseUserRole(user),
+      effectiveRole: resolveSupabaseUserRole(user),
+      roleSource: 'supabase_metadata',
+      decision: 'DENY',
       reason: 'user_provisioning_failed',
       metadata: {
         message: error instanceof Error ? error.message : 'unknown_error',
@@ -88,21 +90,43 @@ export async function middleware(request: NextRequest) {
   // API routes memakai permission check masing-masing endpoint.
   // Middleware route-guard difokuskan ke halaman.
   if (pathname.startsWith('/api/')) {
+    await logRbacDecision({
+      userId: user.id,
+      path: pathname,
+      method: request.method,
+      effectiveRole: userRole,
+      roleSource: 'turso',
+      decision: 'ALLOW',
+      reason: 'api_route_policy_delegated_to_endpoint',
+    });
+
     return response;
   }
 
   // Check route access
   if (!canAccessRoute(userRole, pathname)) {
-    await logAccessDenied({
+    await logRbacDecision({
       userId: user.id,
       path: pathname,
       method: request.method,
-      role: userRole,
+      effectiveRole: userRole,
+      roleSource: 'turso',
+      decision: 'DENY',
       reason: 'route_guard_denied',
     });
 
     return NextResponse.redirect(new URL('/', request.url));
   }
+
+  await logRbacDecision({
+    userId: user.id,
+    path: pathname,
+    method: request.method,
+    effectiveRole: userRole,
+    roleSource: 'turso',
+    decision: 'ALLOW',
+    reason: 'route_guard_allowed',
+  });
 
   // Check profile completeness - redirect to /settings?setup=true if profile is incomplete
   const settingsPath = '/settings';

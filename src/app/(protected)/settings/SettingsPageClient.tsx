@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Database, Bell, Shield, DollarSign, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, EyeOff, CircleCheck, CircleX, Loader2 } from "lucide-react";
+import { Database, Bell, Shield, DollarSign, AlertTriangle, Users, Building, Download, Upload, FileText, Save, Camera, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabase/client";
 
 const supabase = createSupabaseClient();
@@ -27,10 +27,12 @@ interface CompanyData {
 
 interface UserData {
   id?: string;
+  supabaseUserId?: string;
   name?: string;
   email?: string;
   phone?: string;
   role?: string;
+  avatar?: string | null;
 }
 
 interface SettingsPageClientProps {
@@ -58,8 +60,8 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [savingCompany, setSavingCompany] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [lastActivityText, setLastActivityText] = useState("-");
 
   const [companyData, setCompanyData] = useState<CompanyData>({
@@ -73,54 +75,98 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
     logo: String(stats.companyData?.logo || ""),
   });
 
+  const extractLogoObjectPath = (publicUrl?: string | null) => {
+    if (!publicUrl) return null;
+    const marker = "/storage/v1/object/public/logo/";
+    const markerIndex = publicUrl.indexOf(marker);
+    if (markerIndex === -1) return null;
+
+    const pathWithQuery = publicUrl.slice(markerIndex + marker.length);
+    const objectPath = pathWithQuery.split("?")[0];
+    return objectPath || null;
+  };
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setSavingCompany(true);
-    try {
-      // 1. Delete old logo if it exists
-      if (companyData.logo) {
-        const oldPath = companyData.logo.split('/').pop();
-        if (oldPath) {
-          await supabase.storage.from('logo').remove([oldPath]);
-        }
-      }
+    if (!file.type.startsWith("image/")) {
+      showToast("error", "File logo harus berupa gambar.");
+      e.target.value = "";
+      return;
+    }
 
-      // 2. Upload new logo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${companyData.id || 'new'}-${Date.now()}.${fileExt}`;
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("error", "Ukuran logo maksimal 2MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setSavingCompany(true);
+
+    let newLogoPath: string | null = null;
+    let companySaved = false;
+
+    try {
+      const oldLogoPath = extractLogoObjectPath(companyData.logo);
+
+      // 1. Upload logo baru terlebih dahulu
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || "png";
+      const companyPathSegment = companyData.id?.trim() || "default";
+      newLogoPath = `company/${companyPathSegment}/${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('logo')
-        .upload(fileName, file);
+        .upload(newLogoPath, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      // 3. Get new URL
+      // 2. Ambil URL publik logo baru
       const { data: { publicUrl } } = supabase.storage
         .from('logo')
-        .getPublicUrl(fileName);
+        .getPublicUrl(newLogoPath);
 
       const updatedData = { ...companyData, logo: publicUrl };
-      setCompanyData(updatedData);
 
-      // 4. Auto-save to database
+      // 3. Simpan URL baru ke database
       const res = await fetch("/api/settings?type=company", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedData),
       });
+
       const data = await res.json();
-      if (res.ok && !data.error) {
-        showToast("success", "Logo berhasil diunggah dan disimpan!");
-        router.refresh();
-      } else {
-        showToast("error", data.error || "Logo terunggah tapi gagal disimpan");
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || "Logo terunggah tapi gagal disimpan");
       }
+
+      companySaved = true;
+      setCompanyData(updatedData);
+
+      // 4. Jika sukses simpan, baru hapus logo lama (best effort)
+      if (oldLogoPath && oldLogoPath !== newLogoPath) {
+        try {
+          await supabase.storage.from("logo").remove([oldLogoPath]);
+        } catch (removeOldLogoError) {
+          console.warn("Failed to remove old company logo:", removeOldLogoError);
+        }
+      }
+
+      showToast("success", "Logo berhasil diunggah dan disimpan!");
+      router.refresh();
     } catch (error: unknown) {
+      // rollback file baru jika update DB belum berhasil
+      if (newLogoPath && !companySaved) {
+        try {
+          await supabase.storage.from("logo").remove([newLogoPath]);
+        } catch {
+          // best effort cleanup
+        }
+      }
       showToast("error", `Gagal mengunggah logo: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setSavingCompany(false);
+      e.target.value = "";
     }
   };
 
@@ -129,10 +175,110 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
     name: "",
     email: "",
     phone: "",
-    role: "user"
+    role: "user",
+    avatar: null,
   });
 
-  const [newPassword, setNewPassword] = useState("");
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("error", "File avatar harus berupa gambar.");
+      e.target.value = "";
+      return;
+    }
+
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("error", "Ukuran avatar maksimal 2MB.");
+      e.target.value = "";
+      return;
+    }
+
+    if (!userData.name?.trim()) {
+      showToast("error", "Isi nama terlebih dahulu sebelum upload avatar.");
+      e.target.value = "";
+      return;
+    }
+
+    setSavingAvatar(true);
+
+    let newAvatarPath: string | null = null;
+    let profileSaved = false;
+
+    try {
+      const oldAvatarPath = extractLogoObjectPath(userData.avatar);
+      const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const userPathSegment = userData.supabaseUserId || userData.id || "user";
+      newAvatarPath = `avatars/${userPathSegment}/${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("logo")
+        .upload(newAvatarPath, file, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("logo")
+        .getPublicUrl(newAvatarPath);
+
+      const res = await fetch("/api/settings?type=user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: userData.name,
+          phone: userData.phone?.trim() ? userData.phone.trim() : null,
+          avatar: publicUrl,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || "Gagal menyimpan avatar ke profil");
+      }
+
+      profileSaved = true;
+
+      if (oldAvatarPath && oldAvatarPath.startsWith("avatars/") && oldAvatarPath !== newAvatarPath) {
+        try {
+          await supabase.storage.from("logo").remove([oldAvatarPath]);
+        } catch (removeOldAvatarError) {
+          console.warn("Failed to remove old avatar:", removeOldAvatarError);
+        }
+      }
+
+      if (data?.data) {
+        setUserData((prev) => ({
+          ...prev,
+          id: data.data.id,
+          supabaseUserId: data.data.supabaseUserId || prev.supabaseUserId,
+          name: data.data.name || prev.name || "",
+          email: data.data.email || prev.email || "",
+          phone: data.data.phone || "",
+          role: data.data.role || prev.role || "user",
+          avatar: data.data.avatar || publicUrl,
+        }));
+      }
+
+      showToast("success", "Avatar berhasil diperbarui!");
+      router.refresh();
+    } catch (error: unknown) {
+      if (newAvatarPath && !profileSaved) {
+        try {
+          await supabase.storage.from("logo").remove([newAvatarPath]);
+        } catch {
+          // best effort cleanup
+        }
+      }
+      showToast("error", `Gagal upload avatar: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setSavingAvatar(false);
+      e.target.value = "";
+    }
+  };
+
   const [isSetupMode, setIsSetupMode] = useState(false);
 
   useEffect(() => {
@@ -156,23 +302,23 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           if (data) {
             setUserData({
               id: data.id,
+              supabaseUserId: data.supabaseUserId,
               name: data.name || "",
               email: data.email || "",
               phone: data.phone || "",
-              role: data.role || "user"
+              role: data.role || "user",
+              avatar: data.avatar || null,
             });
-            setCurrentUserId(data.id);
-          } else {
-            // Fallback: get user ID from auth if record doesn't exist yet
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) setCurrentUserId(user.id);
           }
+        } else if (res.status === 401) {
+          showToast("error", "Sesi login tidak valid. Silakan login ulang.");
         } else {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) setCurrentUserId(user.id);
+          const data = await res.json().catch(() => null);
+          showToast("error", data?.error || "Gagal memuat profil");
         }
       } catch (error) {
         console.error("Failed to fetch profile:", error);
+        showToast("error", "Terjadi kesalahan saat memuat profil");
       } finally {
         setLoadingUser(false);
       }
@@ -219,25 +365,34 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       showToast("error", "Nama wajib diisi!");
       return;
     }
-    // We don't strictly require email here because we get it from auth
+    // Email dikelola Supabase Auth, jadi update profil hanya name/phone.
     
     setSavingProfile(true);
     try {
-      const endpoint = currentUserId ? "/api/settings?type=user" : "/api/users/sync";
-      const method = currentUserId ? "PUT" : "POST";
-      
-      const res = await fetch(endpoint, {
-        method: method,
+      const res = await fetch("/api/settings?type=user", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: currentUserId,
-          ...userData,
+          name: userData.name,
+          phone: userData.phone?.trim() ? userData.phone.trim() : null,
         }),
       });
 
       const data = await res.json();
       
       if (res.ok && !data.error) {
+        if (data?.data) {
+          setUserData((prev) => ({
+            ...prev,
+            id: data.data.id,
+            supabaseUserId: data.data.supabaseUserId || prev.supabaseUserId,
+            name: data.data.name || "",
+            email: data.data.email || prev.email || "",
+            phone: data.data.phone || "",
+            role: data.data.role || prev.role || "user",
+            avatar: data.data.avatar ?? prev.avatar ?? null,
+          }));
+        }
         showToast("success", "Profil berhasil diperbarui!");
         if (isSetupMode) {
           window.location.href = "/";
@@ -334,10 +489,27 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
 
             <div className="space-y-4">
               <div className="flex items-start gap-4 p-4 bg-surface-container-high rounded-lg">
-                <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
-                  <Camera className="w-6 h-6 text-zinc-500" />
+                <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-zinc-700/50">
+                  {userData.avatar ? (
+                    <Image src={userData.avatar} alt="Avatar pengguna" width={64} height={64} unoptimized className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-zinc-500" />
+                  )}
                 </div>
                 <div className="flex-1 space-y-3">
+                  <div>
+                    <label className="text-xs text-zinc-500 block mb-1">Avatar Pengguna</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      disabled={savingAvatar}
+                      className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary/90 disabled:opacity-50"
+                    />
+                    <p className="text-[11px] text-zinc-500 mt-1">
+                      Maksimal 2MB. Saat ganti avatar, file lama otomatis dihapus.
+                    </p>
+                  </div>
                   <div>
                     <label className="text-xs text-zinc-500 block mb-1">Nama Lengkap</label>
                     <input 
@@ -352,9 +524,10 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
                     <input 
                       type="email" 
                       value={userData.email}
-                      onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                      className="w-full px-3 py-2 bg-surface-container-highest rounded-lg text-on-surface border border-transparent focus:border-primary outline-none"
+                      readOnly
+                      className="w-full px-3 py-2 bg-surface-container-highest rounded-lg text-zinc-400 border border-transparent outline-none cursor-not-allowed"
                     />
+                    <p className="text-[11px] text-zinc-500 mt-1">Email dikelola oleh Supabase Auth.</p>
                   </div>
                 </div>
               </div>
@@ -372,20 +545,6 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
                 <div>
                   <label className="text-xs text-zinc-500 block mb-1">Peran</label>
                   <div className="px-3 py-2 bg-surface-container-highest rounded-lg text-zinc-400">{userData.role}</div>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-500 block mb-1">Kata Sandi Baru</label>
-                <div className="relative">
-                  <input 
-                    type="password" 
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Masukkan kata sandi baru..."
-                    className="w-full px-3 py-2 pr-10 bg-surface-container-highest rounded-lg text-on-surface border border-transparent focus:border-primary outline-none"
-                  />
-                  <EyeOff className="w-4 h-4 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 

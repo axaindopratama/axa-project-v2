@@ -83,20 +83,10 @@ export async function getOrProvisionAppUser(supabaseUser: SupabaseAuthUserLite):
     };
   }
 
+  // Governance lock: untuk user existing, Turso users.role selalu authoritative.
+  // Metadata Supabase hanya dipakai saat bootstrap create pertama.
   const normalizedExistingRole = normalizeUserRole(existingUser.role);
-  const shouldSyncRoleFromMetadata = hasMetadataRole && normalizedExistingRole !== metadataRole;
-
-  const effectiveRole = shouldSyncRoleFromMetadata ? metadataRole : normalizedExistingRole;
-
-  if (shouldSyncRoleFromMetadata) {
-    await db
-      .update(users)
-      .set({
-        role: metadataRole,
-        updatedAt: now,
-      })
-      .where(eq(users.id, existingUser.id));
-  }
+  const effectiveRole = normalizedExistingRole;
 
   return {
     id: existingUser.id,
@@ -108,7 +98,7 @@ export async function getOrProvisionAppUser(supabaseUser: SupabaseAuthUserLite):
     role: effectiveRole,
     companyId: existingUser.companyId || null,
     createdAt: existingUser.createdAt || null,
-    updatedAt: shouldSyncRoleFromMetadata ? now : existingUser.updatedAt || null,
+    updatedAt: existingUser.updatedAt || null,
     wasProvisioned: false,
   };
 }
