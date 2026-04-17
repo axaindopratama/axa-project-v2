@@ -291,38 +291,38 @@ export default function KanbanPage() {
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 flex items-center justify-center">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="p-10 pt-24 space-y-8 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             Financial Kanban
           </h1>
           <p className="text-zinc-500 mt-1">
             Task-to-Cost tracking with drag-and-drop
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-center gap-3 sm:gap-4 w-full lg:w-auto">
+          <div className="relative sm:col-span-2 lg:col-span-1">
             <input
               type="text"
               placeholder="Cari task..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-surface-container-low border-none text-zinc-300 py-2 px-4 rounded-lg focus:ring-2 focus:ring-primary/40 text-sm w-48"
+              className="w-full lg:w-56 bg-surface-container-low border-none text-zinc-300 py-2.5 px-4 rounded-lg focus:ring-2 focus:ring-primary/40 text-sm"
             />
           </div>
           <select
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
-            className="bg-surface-container-low border-none text-zinc-300 py-2 px-4 rounded-lg focus:ring-2 focus:ring-primary/40"
+            className="w-full bg-surface-container-low border-none text-zinc-300 py-2.5 px-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           >
             <option value="">All Projects</option>
             {projects.map(p => (
@@ -331,7 +331,7 @@ export default function KanbanPage() {
           </select>
           <button 
             onClick={() => setShowAddModal(true)}
-            className="gold-gradient px-4 py-2 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
+            className="w-full sm:w-auto justify-center gold-gradient px-4 py-2.5 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             New Task
@@ -340,11 +340,11 @@ export default function KanbanPage() {
       </div>
 
       {/* Kanban Columns */}
-      <div className="grid grid-cols-3 gap-6 overflow-x-auto pb-4">
+      <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-2 sm:pb-4 snap-x snap-mandatory">
         {columns.map((column) => (
           <div
             key={column.id}
-            className="bg-surface-container-low rounded-xl min-h-[500px]"
+            className="bg-surface-container-low rounded-xl min-h-[500px] flex-shrink-0 w-[86vw] sm:w-[24rem] lg:w-1/3 snap-start"
           >
             <div className="p-4 border-b border-surface-container-highest">
               <div className="flex items-center justify-between">
@@ -509,8 +509,8 @@ export default function KanbanPage() {
 
       {/* Add Task Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-headline font-bold text-on-surface">
                 Tambah Task Baru
@@ -581,7 +581,7 @@ export default function KanbanPage() {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-6">
               <button
                 onClick={() => setShowAddModal(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
@@ -603,8 +603,8 @@ export default function KanbanPage() {
 
       {/* Edit Task Modal */}
       {showEditModal && selectedTask && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-headline font-bold text-on-surface">
                 Edit Task
@@ -656,7 +656,7 @@ export default function KanbanPage() {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-6">
               <button
                 onClick={() => setShowEditModal(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
@@ -678,8 +678,8 @@ export default function KanbanPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedTask && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -698,7 +698,7 @@ export default function KanbanPage() {
               Apakah Anda yakin ingin menghapus task <span className="font-bold text-primary">{selectedTask.title}</span>?
             </p>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
@@ -723,8 +723,8 @@ export default function KanbanPage() {
 
       {/* Cost Modal (Complete Task) */}
       {showCostModal && selectedTask && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-headline font-bold text-on-surface mb-2">
               Selesaikan Task
             </h2>
@@ -773,7 +773,7 @@ export default function KanbanPage() {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-6">
               <button
                 onClick={() => {
                   setShowCostModal(false);

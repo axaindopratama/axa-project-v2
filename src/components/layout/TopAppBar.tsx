@@ -3,7 +3,7 @@
 import { createSupabaseClient } from "@/lib/supabase/client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, User, LogOut, Settings, Loader2 } from "lucide-react";
+import { Search, Bell, User, LogOut, Settings, Loader2, Menu } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 
 interface Notification {
@@ -20,9 +20,10 @@ interface TopAppBarProps {
     email: string;
     avatar?: string;
   };
+  onMenuClick?: () => void;
 }
 
-export function TopAppBar({ user: initialUser }: TopAppBarProps) {
+export function TopAppBar({ user: initialUser, onMenuClick }: TopAppBarProps) {
   const router = useRouter();
   const supabase = createSupabaseClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,9 +101,28 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="flex justify-between items-center w-full px-6 h-16 bg-surface fixed top-0 left-64 right-0 z-40">
+    <header className="flex justify-between items-center w-full px-4 md:px-6 h-16 bg-surface fixed top-0 left-0 lg:left-64 right-0 z-40 border-b border-outline-variant/20">
       {/* Search */}
-      <form onSubmit={handleSearch} className="flex items-center gap-6 flex-1 max-w-xl">
+      <div className="flex items-center gap-2 md:gap-3 flex-1 max-w-xl">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-full text-zinc-400 hover:text-zinc-200 hover:bg-surface-container-high transition-colors"
+          aria-label="Buka menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push('/projects')}
+          className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-full text-zinc-400 hover:text-zinc-200 hover:bg-surface-container-high transition-colors"
+          aria-label="Buka pencarian proyek"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+
+      <form onSubmit={handleSearch} className="hidden md:flex items-center gap-6 flex-1 max-w-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm" />
           <input
@@ -114,9 +134,10 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
           />
         </div>
       </form>
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Notifications */}
         <div className="relative" ref={notifRef}>
           <button 
@@ -132,7 +153,7 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-12 w-80 bg-surface-container-low rounded-xl shadow-xl border border-zinc-800 overflow-hidden">
+            <div className="absolute right-0 top-12 w-[min(20rem,calc(100vw-2rem))] bg-surface-container-low rounded-xl shadow-xl border border-zinc-800 overflow-hidden">
               <div className="flex items-center justify-between p-4 border-b border-zinc-800">
                 <h3 className="font-headline font-bold text-on-surface">Notifications</h3>
                 {unreadCount > 0 && (
@@ -182,7 +203,7 @@ export function TopAppBar({ user: initialUser }: TopAppBarProps) {
           )}
         </div>
 
-        <div className="h-6 w-px bg-outline-variant/20" />
+        <div className="hidden md:block h-6 w-px bg-outline-variant/20" />
 
         {/* User Profile */}
         <div className="relative" ref={profileRef}>

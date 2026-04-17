@@ -72,8 +72,8 @@ export default function NewTransactionPage() {
   };
 
   return (
-    <div className="p-10 pt-24 space-y-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-4">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8 max-w-2xl mx-auto">
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4">
         <button
           onClick={() => router.back()}
           className="p-2 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors"
@@ -81,7 +81,7 @@ export default function NewTransactionPage() {
           <ArrowLeft className="w-5 h-5 text-zinc-400" />
         </button>
         <div>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             New Transaction
           </h1>
           <p className="text-zinc-500 mt-1">
@@ -91,12 +91,12 @@ export default function NewTransactionPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-surface-container-low p-6 rounded-lg space-y-6">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg space-y-6">
           <div>
             <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
               Type
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, type: "expense" })}
@@ -248,7 +248,7 @@ export default function NewTransactionPage() {
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
           <button
             type="button"
             onClick={() => router.back()}

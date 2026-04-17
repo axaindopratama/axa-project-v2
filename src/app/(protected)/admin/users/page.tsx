@@ -43,19 +43,19 @@ export default async function AdminUsersPage() {
     .orderBy(desc(users.createdAt));
 
   return (
-    <div className="p-6 lg:p-10 pt-24 min-h-screen">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 min-h-screen space-y-6 sm:space-y-8">
+      <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Link href="/settings" className="flex items-center gap-2 text-zinc-400 hover:text-on-surface mb-2 transition-colors">
+          <Link href="/settings" className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-on-surface mb-2 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Kembali ke Pengaturan
           </Link>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             Manajemen Pengguna
           </h1>
           <p className="text-zinc-500 mt-1">Kelola akun dan peran pengguna sistem</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors">
+        <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors">
           <Plus className="w-5 h-5" />
           Tambah Pengguna
         </button>
@@ -63,22 +63,22 @@ export default async function AdminUsersPage() {
 
       <div className="bg-surface-container-low rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[760px]">
             <thead className="bg-surface-container-high border-b border-zinc-700">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
                   Pengguna
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
                   Kontak
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
                   Peran
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-4 text-left text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
                   Terakhir Masuk
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-4 text-right text-xs font-headline font-bold text-zinc-400 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -86,23 +86,23 @@ export default async function AdminUsersPage() {
             <tbody className="divide-y divide-zinc-700">
               {allUsers?.map((u) => (
                 <tr key={u.id} className="hover:bg-surface-container-high transition-colors">
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                         <span className="text-primary font-headline font-bold">
                           {u.name?.charAt(0).toUpperCase() || 'U'}
                         </span>
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="font-headline font-bold text-on-surface">{u.name || 'Tanpa Nama'}</p>
-                        <p className="text-xs text-zinc-500">{u.email}</p>
+                        <p className="text-xs text-zinc-500 break-all">{u.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-4">
                     <p className="text-sm text-zinc-400">{u.phone || '-'}</p>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-4">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold ${
                       u.role === 'admin' 
                         ? 'bg-purple-500/20 text-purple-400' 
@@ -114,7 +114,7 @@ export default async function AdminUsersPage() {
                       {u.role === 'admin' ? 'Admin' : u.role === 'manager' ? 'Manager' : 'Pengguna'}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 sm:px-6 py-4">
                     <p className="text-sm text-zinc-400">
                       {u.updatedAt
                         ? new Date(u.updatedAt).toLocaleDateString('id-ID', {
@@ -127,7 +127,7 @@ export default async function AdminUsersPage() {
                         : 'Belum pernah'}
                     </p>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 sm:px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button className="p-2 rounded-lg hover:bg-surface-container-highest transition-colors text-zinc-400 hover:text-on-surface">
                         <Pencil className="w-4 h-4" />
@@ -144,7 +144,7 @@ export default async function AdminUsersPage() {
               ))}
               {(!allUsers || allUsers.length === 0) && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-3 sm:px-6 py-12 text-center">
                     <Users className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
                     <p className="text-zinc-500">Belum ada pengguna</p>
                   </td>
@@ -155,7 +155,7 @@ export default async function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="mt-6 p-4 bg-blue-500/10 rounded-xl flex items-start gap-3">
+      <div className="p-4 bg-blue-500/10 rounded-xl flex items-start gap-3">
         <Shield className="w-5 h-5 text-blue-400 mt-0.5" />
         <div>
           <p className="text-sm font-headline font-bold text-blue-400">Informasi</p>

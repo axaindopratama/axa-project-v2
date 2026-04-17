@@ -450,9 +450,9 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
   };
 
   return (
-    <div className="p-6 lg:p-10 pt-24 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-headline font-bold text-on-surface">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
           Pengaturan
         </h1>
         <p className="text-zinc-500 mt-1">
@@ -470,10 +470,10 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Profil Pengguna */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-primary" />
@@ -488,7 +488,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-4 p-4 bg-surface-container-high rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4 p-4 bg-surface-container-high rounded-lg">
                 <div className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-zinc-700/50">
                   {userData.avatar ? (
                     <Image src={userData.avatar} alt="Avatar pengguna" width={64} height={64} unoptimized className="w-full h-full object-cover" />
@@ -551,7 +551,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
               <button 
                 onClick={handleSaveProfile}
                 disabled={savingProfile}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {savingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {savingProfile ? "Menyimpan..." : "Simpan Perubahan"}
@@ -560,7 +560,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Data Perusahaan */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <Building className="w-5 h-5 text-blue-500" />
@@ -576,7 +576,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-xs text-zinc-500 block mb-1">Logo Perusahaan</label>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                   {companyData.logo && (
                     <Image src={companyData.logo} alt="Logo perusahaan" width={64} height={64} unoptimized className="w-16 h-16 object-contain rounded border border-zinc-700" />
                   )}
@@ -659,7 +659,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
               <button 
                 onClick={handleSaveCompany}
                 disabled={savingCompany}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {savingCompany ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {savingCompany ? "Menyimpan..." : "Simpan Data Perusahaan"}
@@ -668,7 +668,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Pengaturan Proyek Default */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-primary" />
@@ -711,7 +711,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Batas Peringatan Budget */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-yellow-500" />
@@ -724,7 +724,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-surface-container-high rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -746,7 +746,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Ekspor Data */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                 <Download className="w-5 h-5 text-emerald-500" />
@@ -780,7 +780,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Backup & Restore */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                 <Upload className="w-5 h-5 text-purple-500" />
@@ -816,9 +816,9 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Info Sistem */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
                 <Database className="w-5 h-5 text-zinc-400" />
@@ -862,7 +862,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Keamanan */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
                 <Shield className="w-5 h-5 text-zinc-400" />
@@ -892,7 +892,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Notifikasi */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
                 <Bell className="w-5 h-5 text-zinc-400" />
@@ -928,7 +928,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
           </div>
 
           {/* Riwayat Aktivitas */}
-          <div className="bg-surface-container-low rounded-xl p-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
                 <FileText className="w-5 h-5 text-zinc-400" />
@@ -951,7 +951,7 @@ export default function SettingsPageClient({ stats }: SettingsPageClientProps) {
       </div>
 
       {toast && (
-        <div className="fixed bottom-6 right-6 p-4 rounded-xl shadow-xl flex items-center gap-3 z-50 bg-surface-container-low border border-zinc-700">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 p-4 rounded-xl shadow-xl flex items-center gap-3 z-50 bg-surface-container-low border border-zinc-700">
           {toast.type === "success" ? (
             <CircleCheck className="w-6 h-6 text-emerald-500" />
           ) : (

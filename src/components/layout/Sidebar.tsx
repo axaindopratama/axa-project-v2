@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { createSupabaseClient } from "@/lib/supabase/client";
 import { hasPermission, normalizeUserRole } from "@/lib/rbac";
@@ -45,10 +46,12 @@ const navigation: NavItem[] = [
   { name: "Audit Log", href: "/admin/audit", icon: Shield, requiredPermission: "audit:read" },
 ];
 
-export function Sidebar({ className, company, user }: { 
+export function Sidebar({ className, company, user, isMobileOpen = false, onCloseMobile }: { 
   className?: string, 
   company?: { logo?: string | null, name: string, subtitle: string },
-  user?: { name: string; email: string; avatar?: string; role?: UserRole | null }
+  user?: { name: string; email: string; avatar?: string; role?: UserRole | null },
+  isMobileOpen?: boolean,
+  onCloseMobile?: () => void,
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -59,18 +62,34 @@ export function Sidebar({ className, company, user }: {
     !item.requiredPermission || hasPermission(userRole, item.requiredPermission)
   );
 
+  useEffect(() => {
+    if (!onCloseMobile) return;
+    onCloseMobile();
+  }, [pathname, onCloseMobile]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && onCloseMobile) {
+        onCloseMobile();
+      }
+    };
+
+    if (isMobileOpen) {
+      document.addEventListener("keydown", onKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileOpen, onCloseMobile]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
 
-  return (
-    <aside
-      className={cn(
-        "flex flex-col w-64 h-screen fixed left-0 top-0 py-8 bg-surface-container-low z-50",
-        className
-      )}
-    >
+  const navContent = (
+    <>
       {/* Logo */}
       <div className="px-8 mb-10">
         <div className="flex items-center gap-3">
@@ -99,6 +118,7 @@ export function Sidebar({ className, company, user }: {
           return (
             <Link
               key={item.name}
+              onClick={onCloseMobile}
               href={item.href}
               className={cn(
                 "flex items-center px-8 py-3 text-sm font-medium uppercase tracking-widest transition-all",
@@ -155,6 +175,38 @@ export function Sidebar({ className, company, user }: {
           Bantuan
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col w-64 h-screen fixed left-0 top-0 py-8 bg-surface-container-low z-50",
+          className
+        )}
+      >
+        {navContent}
+      </aside>
+
+      <div
+        className={cn(
+          "lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity",
+          isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={onCloseMobile}
+        aria-hidden="true"
+      />
+
+      <aside
+        aria-hidden={!isMobileOpen}
+        className={cn(
+          "lg:hidden flex flex-col w-72 max-w-[85vw] h-screen fixed left-0 top-0 py-6 bg-surface-container-low z-50 transition-transform duration-200",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {navContent}
+      </aside>
+    </>
   );
 }

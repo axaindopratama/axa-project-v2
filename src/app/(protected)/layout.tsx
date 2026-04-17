@@ -1,6 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { TopAppBar } from "@/components/layout/TopAppBar";
+import { AppShellClient } from "@/components/layout/AppShellClient";
 import { getDb } from "@/lib/db";
 import { companySettings } from "@/lib/db/schema";
 import { getOrProvisionAppUser } from "@/lib/userProvisioning";
@@ -27,19 +26,15 @@ export default async function ProtectedLayout({
   } : undefined;
 
   return (
-    <div className="min-h-screen bg-surface">
-      <Sidebar 
-        user={user}
-        company={{
-          logo: company.logo,
-          name: company.companyName || "AXA-PROJECT",
-          subtitle: company.companySubtitle || "CV. AXA INDO PRATAMA"
-        }} 
-      />
-      <div className="ml-64">
-        <TopAppBar user={user} />
-        <main className="pt-16">{children}</main>
-      </div>
-    </div>
+    <AppShellClient
+      user={user}
+      company={{
+        logo: company.logo,
+        name: company.companyName || "AXA-PROJECT",
+        subtitle: company.companySubtitle || "CV. AXA INDO PRATAMA"
+      }}
+    >
+      {children}
+    </AppShellClient>
   );
 }

@@ -33,7 +33,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
   
   if (!entity) {
     return (
-      <div className="p-10 pt-24">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24">
         <p className="text-zinc-500">Entity not found</p>
       </div>
     );
@@ -50,14 +50,14 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="p-10 pt-24 space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4">
           <Link href="/entities" className="p-2 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors">
             <ArrowLeft className="w-5 h-5 text-zinc-400" />
           </Link>
           <div>
-            <h1 className="text-3xl font-headline font-bold text-on-surface">
+            <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface break-words">
               {entity.name}
             </h1>
             <p className="text-zinc-500 mt-1 capitalize">
@@ -67,7 +67,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
         </div>
         <Link 
           href={`/entities/${id}/edit`}
-          className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
+          className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
         >
           <Edit className="w-4 h-4" />
           Edit
@@ -76,7 +76,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
               Contact Information
             </h2>
@@ -90,7 +90,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
               {entity.email && (
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-zinc-500" />
-                  <a href={`mailto:${entity.email}`} className="text-primary hover:underline">
+                  <a href={`mailto:${entity.email}`} className="text-primary hover:underline break-all">
                     {entity.email}
                   </a>
                 </div>
@@ -115,7 +115,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
               Transactions ({entityTransactions.length})
             </h2>
@@ -124,8 +124,8 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
             ) : (
               <div className="space-y-3">
                 {entityTransactions.map((tx) => (
-                  <div key={tx.id} className="flex justify-between items-center p-3 bg-surface-container-high rounded-lg">
-                    <div>
+                  <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-surface-container-high rounded-lg">
+                    <div className="min-w-0">
                       <span className="text-zinc-300">{tx.date}</span>
                       <span className={`ml-2 px-2 py-0.5 text-xs uppercase font-bold tracking-widest rounded ${
                         tx.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
@@ -146,7 +146,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
         </div>
 
         <div className="space-y-6">
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
               Summary
             </h2>
@@ -176,7 +176,7 @@ export default async function EntityDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               {entity.type === 'vendor' ? (
                 <Building2 className="w-5 h-5 text-primary" />

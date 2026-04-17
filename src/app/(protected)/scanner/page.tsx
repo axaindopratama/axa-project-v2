@@ -262,9 +262,9 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="p-10 pt-24 space-y-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-headline font-bold text-on-surface">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
           AI Receipt Scanner
         </h1>
         <p className="text-zinc-500 mt-1">
@@ -274,7 +274,7 @@ export default function ScannerPage() {
 
       {!file ? (
         <div
-          className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+          className={`border-2 border-dashed rounded-xl p-6 sm:p-12 text-center transition-all ${
             dragActive 
               ? "border-primary bg-primary/5" 
               : "border-surface-container-highest hover:border-zinc-600"
@@ -297,17 +297,17 @@ export default function ScannerPage() {
               </p>
             </div>
 
-            <div className="flex gap-4 mt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 w-full sm:w-auto">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
+                className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
               >
                 <ImageIcon className="w-4 h-4" />
                 Unggah Gambar
               </button>
               <button
                 onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
+                className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
               >
                 <Camera className="w-4 h-4" />
                 Ambil Foto
@@ -337,10 +337,10 @@ export default function ScannerPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="bg-surface-container-low rounded-xl p-6">
-            <div className="flex items-start gap-6">
+          <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
               {preview && (
-                <div className="w-48 h-48 rounded-lg overflow-hidden bg-surface-container-high">
+                <div className="w-full sm:w-48 h-48 rounded-lg overflow-hidden bg-surface-container-high">
                   <NextImage src={preview} alt="Receipt preview" width={192} height={192} unoptimized className="w-full h-full object-cover" />
                 </div>
               )}
@@ -359,17 +359,17 @@ export default function ScannerPage() {
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
                   <button
                     onClick={handleRetake}
-                    className="px-4 py-2 bg-surface-container-high rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 bg-surface-container-high rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors"
                   >
                     Ambil Ulang
                   </button>
                   <button
                     onClick={handleScan}
                     disabled={loading}
-                    className="gold-gradient px-6 py-2 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="w-full sm:w-auto justify-center gold-gradient px-6 py-2 rounded-lg font-headline font-bold text-on-primary hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50"
                   >
                     {loading ? (
                       <>
@@ -388,7 +388,7 @@ export default function ScannerPage() {
             </div>
           </div>
 
-          <div className="glass-panel rounded-xl p-6">
+          <div className="glass-panel rounded-xl p-4 sm:p-6">
             <h3 className="font-headline font-bold text-on-surface mb-4">
               Tips untuk hasil terbaik
             </h3>
@@ -411,8 +411,8 @@ export default function ScannerPage() {
       )}
 
       {showVerify && verifiedData && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-2xl w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-headline font-bold text-on-surface">
                 Verifikasi Hasil Scan
@@ -510,7 +510,7 @@ export default function ScannerPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs uppercase font-bold tracking-widest text-zinc-500 mb-2">
                     Tanggal
@@ -530,7 +530,7 @@ export default function ScannerPage() {
                 </label>
                 <div className="space-y-2">
                   {verifiedData.items.map((item, idx) => (
-                    <div key={idx} className="flex gap-2">
+                    <div key={idx} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2">
                       <input
                         type="text"
                         value={item.description}
@@ -551,7 +551,7 @@ export default function ScannerPage() {
                           newItems[idx].totalPrice = newItems[idx].qty * newItems[idx].unitPrice;
                           setVerifiedData({ ...verifiedData, items: newItems });
                         }}
-                        className="w-16 bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg text-sm text-center"
+                        className="w-full sm:w-16 bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg text-sm text-center"
                         placeholder="Qty"
                       />
                       <input
@@ -563,7 +563,7 @@ export default function ScannerPage() {
                           newItems[idx].totalPrice = newItems[idx].qty * newItems[idx].unitPrice;
                           setVerifiedData({ ...verifiedData, items: newItems });
                         }}
-                        className="w-24 bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg text-sm text-right"
+                        className="w-full sm:w-24 bg-surface-container-high border-none text-zinc-300 py-2 px-3 rounded-lg text-sm text-right"
                         placeholder="Price"
                       />
                     </div>
@@ -581,7 +581,7 @@ export default function ScannerPage() {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-6">
               <button
                 onClick={() => setShowVerify(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
@@ -600,7 +600,7 @@ export default function ScannerPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 right-6 p-4 rounded-xl shadow-xl flex items-center gap-3 z-50 bg-surface-container-low border border-zinc-700">
+        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 p-4 rounded-xl shadow-xl flex items-center gap-3 z-50 bg-surface-container-low border border-zinc-700">
           {toast.type === "success" ? (
             <CircleCheck className="w-6 h-6 text-emerald-500" />
           ) : (

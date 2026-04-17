@@ -29,9 +29,9 @@ export default function HelpPage() {
   ];
 
   return (
-    <div className="p-10 pt-24 space-y-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-headline font-bold text-on-surface">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
           Pusat Bantuan
         </h1>
         <p className="text-zinc-500 mt-1">
@@ -40,24 +40,24 @@ export default function HelpPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface-container-low p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
           <BookOpen className="w-8 h-8 text-primary mx-auto mb-3" />
           <h3 className="font-headline font-bold text-on-surface">Dokumentasi</h3>
           <p className="text-xs text-zinc-500 mt-1">Panduan lengkap penggunaan</p>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
           <MessageCircle className="w-8 h-8 text-primary mx-auto mb-3" />
           <h3 className="font-headline font-bold text-on-surface">FAQ</h3>
           <p className="text-xs text-zinc-500 mt-1">Pertanyaan yang sering diajukan</p>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl text-center hover:bg-surface-container-high transition-colors cursor-pointer">
           <Mail className="w-8 h-8 text-primary mx-auto mb-3" />
           <h3 className="font-headline font-bold text-on-surface">Hubungi Kami</h3>
           <p className="text-xs text-zinc-500 mt-1">Support via email</p>
         </div>
       </div>
 
-      <div className="bg-surface-container-low rounded-xl p-6">
+      <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
         <h2 className="text-xl font-headline font-bold text-on-surface mb-6">
           Pertanyaan yang Sering Diajukan
         </h2>
@@ -65,13 +65,13 @@ export default function HelpPage() {
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
             <details key={idx} className="group">
-              <summary className="flex items-center justify-between p-4 bg-surface-container-high rounded-lg cursor-pointer list-none">
+              <summary className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-surface-container-high rounded-lg cursor-pointer list-none">
                 <span className="font-headline font-bold text-on-surface">
                   {faq.question}
                 </span>
                 <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
               </summary>
-              <div className="mt-2 p-4 text-zinc-400 text-sm">
+              <div className="mt-2 p-3 sm:p-4 text-zinc-400 text-sm">
                 {faq.answer}
               </div>
             </details>
@@ -79,13 +79,13 @@ export default function HelpPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-low rounded-xl p-6">
+      <div className="bg-surface-container-low rounded-xl p-4 sm:p-6">
         <h2 className="text-xl font-headline font-bold text-on-surface mb-6">
           Panduan Cepat
         </h2>
 
         <div className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <span className="text-primary font-headline font-bold">1</span>
             </div>
@@ -95,7 +95,7 @@ export default function HelpPage() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <span className="text-primary font-headline font-bold">2</span>
             </div>
@@ -105,7 +105,7 @@ export default function HelpPage() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <span className="text-primary font-headline font-bold">3</span>
             </div>
@@ -115,7 +115,7 @@ export default function HelpPage() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <span className="text-primary font-headline font-bold">4</span>
             </div>
@@ -127,7 +127,7 @@ export default function HelpPage() {
         </div>
       </div>
 
-      <div className="glass-panel rounded-xl p-6">
+      <div className="glass-panel rounded-xl p-4 sm:p-6">
         <div className="flex items-center gap-4 mb-4">
           <HelpCircle className="w-6 h-6 text-primary" />
           <h2 className="text-lg font-headline font-bold text-on-surface">
@@ -137,7 +137,7 @@ export default function HelpPage() {
         <p className="text-zinc-400 mb-4">
           Hubungi tim support kami untuk assistance lebih lanjut.
         </p>
-        <button className="gold-gradient px-6 py-2 rounded-lg font-headline font-bold text-sm text-on-primary hover:shadow-lg transition-all">
+        <button className="gold-gradient w-full sm:w-auto px-6 py-2 rounded-lg font-headline font-bold text-sm text-on-primary hover:shadow-lg transition-all">
           Hubungi Support
         </button>
       </div>

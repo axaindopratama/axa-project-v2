@@ -65,7 +65,7 @@ export function DashboardChart({ monthlyExpenseData, monthlyIncomeData = {} }: D
   const last6Data = data.slice(-6);
 
   return (
-    <div className="h-80">
+    <div className="h-64 sm:h-80">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={last6Data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
@@ -135,7 +135,7 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
         <Link
           key={tx.id}
           href={`/transactions/${tx.id}`}
-          className="flex items-center justify-between p-3 bg-surface-container-high rounded-lg hover:bg-surface-container-highest transition-colors"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-surface-container-high rounded-lg hover:bg-surface-container-highest transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -152,7 +152,7 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
               <p className="text-xs text-zinc-500">{tx.date}</p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <p className={`text-sm font-bold ${
               tx.type === "income" ? "text-emerald-500" : "text-red-500"
             }`}>
@@ -186,7 +186,7 @@ export function StatsOverview({
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
       {stats.map((stat) => (
         <div key={stat.label} className="bg-surface-container-low p-4 rounded-lg text-center">
           <p className={`text-2xl font-headline font-bold ${stat.color}`}>

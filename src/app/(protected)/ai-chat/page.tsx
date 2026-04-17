@@ -124,14 +124,14 @@ export default function AIChatPage() {
   };
 
   return (
-    <div className="p-10 pt-24 h-[calc(100vh-64px)] flex flex-col">
-      <div className="mb-6">
-        <h1 className="text-3xl font-headline font-bold text-on-surface">AI Smart Pilot</h1>
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 h-[calc(100vh-64px)] flex flex-col">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">AI Smart Pilot</h1>
         <p className="text-zinc-500 mt-1">Tanyakan tentang proyek dan keuangan Anda</p>
       </div>
 
       {context && (
-        <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6 overflow-x-auto pb-2">
           <div className="bg-surface-container-low px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap">
             <Wallet className="w-4 h-4 text-primary" />
             <span className="text-xs text-zinc-400">Total Budget:</span>
@@ -150,8 +150,8 @@ export default function AIChatPage() {
         </div>
       )}
 
-      <div className="flex-1 bg-surface-container-low rounded-xl overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 bg-surface-container-low rounded-xl overflow-hidden flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -163,7 +163,7 @@ export default function AIChatPage() {
                   <Bot className="w-4 h-4 text-primary" />
                 )}
               </div>
-              <div className={`max-w-[70%] p-4 rounded-xl ${
+              <div className={`max-w-[85%] sm:max-w-[70%] p-3 sm:p-4 rounded-xl ${
                 msg.role === "user"
                   ? "bg-primary/10 text-on-surface"
                   : "bg-surface-container-high text-zinc-300"
@@ -191,7 +191,7 @@ export default function AIChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 border-t border-surface-container-highest">
+        <div className="p-3 sm:p-4 border-t border-surface-container-highest">
           <div className="flex gap-2 mb-3 overflow-x-auto">
             {quickActions.map((action, idx) => (
               <button
@@ -217,7 +217,7 @@ export default function AIChatPage() {
             <button
               onClick={handleSend}
               disabled={loading || !input.trim()}
-              className="gold-gradient p-3 rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+              className="gold-gradient px-3 sm:px-4 rounded-lg hover:shadow-lg transition-all disabled:opacity-50 shrink-0"
             >
               <Send className="w-5 h-5 text-on-primary" />
             </button>

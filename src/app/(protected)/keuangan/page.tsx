@@ -78,9 +78,9 @@ export default async function KeuanganPage() {
   
   const projectStats = await getDb().select().from(projects);
   return (
-    <div className="p-10 pt-24 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-3xl font-headline font-bold text-on-surface">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
           Keuangan
         </h1>
         <p className="text-zinc-500 mt-1">
@@ -89,57 +89,57 @@ export default async function KeuanganPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
               <ArrowUpRight className="w-5 h-5 text-emerald-500" />
             </div>
             <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">Total Income</span>
           </div>
-          <p className="text-2xl font-headline font-bold text-emerald-500">
+          <p className="text-xl sm:text-2xl font-headline font-bold text-emerald-500 break-words">
             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(totalIncome)}
           </p>
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
               <ArrowDownRight className="w-5 h-5 text-red-500" />
             </div>
             <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">Total Expense</span>
           </div>
-          <p className="text-2xl font-headline font-bold text-red-500">
+          <p className="text-xl sm:text-2xl font-headline font-bold text-red-500 break-words">
             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(totalExpense)}
           </p>
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
               <Wallet className="w-5 h-5 text-yellow-500" />
             </div>
             <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">Accounts Payable</span>
           </div>
-          <p className="text-2xl font-headline font-bold text-yellow-500">
+          <p className="text-xl sm:text-2xl font-headline font-bold text-yellow-500 break-words">
             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(unpaidExpenses)}
           </p>
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-primary" />
             </div>
             <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">Net Balance</span>
           </div>
-          <p className={`text-2xl font-headline font-bold ${netBalance >= 0 ? "text-primary" : "text-red-500"}`}>
+          <p className={`text-xl sm:text-2xl font-headline font-bold break-words ${netBalance >= 0 ? "text-primary" : "text-red-500"}`}>
             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(netBalance)}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
               Cash Flow Chart
@@ -149,7 +149,7 @@ export default async function KeuanganPage() {
           <CashFlowChart data={monthlyData} />
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
               Net Cash Flow
@@ -161,7 +161,7 @@ export default async function KeuanganPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
               Pengeluaran per Kategori
@@ -171,7 +171,7 @@ export default async function KeuanganPage() {
           <ExpenseByCategory transactions={transactionsList} />
         </div>
 
-        <div className="bg-surface-container-low p-6 rounded-xl">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-headline font-bold text-on-surface">
               Budget per Proyek
@@ -182,8 +182,8 @@ export default async function KeuanganPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-low p-6 rounded-xl">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-surface-container-low p-4 sm:p-6 rounded-xl">
+        <div className="flex items-center justify-between gap-2 mb-6">
           <h2 className="text-lg font-headline font-bold text-on-surface">
             Recent Transactions
           </h2>
@@ -197,8 +197,8 @@ export default async function KeuanganPage() {
         ) : (
           <div className="space-y-3">
             {transactionsList.slice(0, 5).map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between p-4 bg-surface-container-high rounded-lg">
-                <div className="flex items-center gap-4">
+              <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-surface-container-high rounded-lg">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     tx.type === "income" ? "bg-emerald-500/10" : "bg-red-500/10"
                   }`}>
@@ -208,12 +208,12 @@ export default async function KeuanganPage() {
                       <ArrowDownRight className="w-5 h-5 text-red-500" />
                     )}
                   </div>
-                  <div>
-                    <p className="text-on-surface font-headline font-bold">{tx.projectName}</p>
+                  <div className="min-w-0">
+                    <p className="text-on-surface font-headline font-bold break-words">{tx.projectName}</p>
                     <p className="text-xs text-zinc-500">{tx.date}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <p className={`font-headline font-bold ${
                     tx.type === "income" ? "text-emerald-500" : "text-red-500"
                   }`}>

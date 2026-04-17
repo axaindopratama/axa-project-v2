@@ -128,9 +128,9 @@ export default async function DashboardPage() {
   const stats = await getDashboardStats();
   
   return (
-    <div className="p-6 lg:p-10 pt-24 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
       {/* Breadcrumbs */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center space-x-2 text-[10px] uppercase tracking-[0.1em]">
           <span className="text-zinc-600">Dashboard</span>
           <ChevronRight className="w-3 h-3 text-zinc-700" />
@@ -149,19 +149,19 @@ export default async function DashboardPage() {
       />
 
       {/* Hero Section */}
-      <section className="grid grid-cols-12 gap-6">
+      <section className="grid grid-cols-12 gap-4 sm:gap-6">
         {/* Main Stats */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
-          <div className="flex justify-between items-end">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
             <div>
               <p className="text-zinc-500 font-headline text-xs font-semibold uppercase tracking-[0.2em] mb-2">
                 Total Saldo Tersedia
               </p>
-              <h1 className="text-4xl lg:text-5xl font-headline font-extrabold text-primary tracking-tighter">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-headline font-extrabold text-primary tracking-tighter leading-tight break-words">
                 {formatCurrency(stats.totalRemaining)}
               </h1>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <div className="flex items-center gap-2 text-primary">
                 <TrendingUp className="w-5 h-5" />
                 <span className="text-xl font-headline font-bold">
@@ -175,12 +175,12 @@ export default async function DashboardPage() {
           </div>
 
           {/* Interactive Chart */}
-          <div className="bg-surface-container-low rounded-lg p-6">
-            <div className="flex justify-between mb-4 items-start">
+          <div className="bg-surface-container-low rounded-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between mb-4 items-start gap-3">
               <h3 className="text-zinc-300 font-headline font-bold uppercase tracking-widest text-xs">
                 Grafik Pengeluaran Bulanan
               </h3>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500" />
                   <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
           <BudgetAlertsPanel alerts={stats.budgetAlerts} />
 
           {/* Burn Rate */}
-          <div className="bg-surface-container-low rounded-lg p-6">
+          <div className="bg-surface-container-low rounded-lg p-4 sm:p-6">
             <h3 className="text-zinc-500 font-headline font-bold uppercase tracking-widest text-[10px] mb-6">
               Prediksi Burn Rate
             </h3>
@@ -251,7 +251,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="glass-panel rounded-lg p-6 space-y-4">
+          <div className="glass-panel rounded-lg p-4 sm:p-6 space-y-4">
             <h3 className="text-primary font-headline font-bold uppercase tracking-widest text-[10px]">
               Ringkasan Cepat
             </h3>
@@ -283,8 +283,8 @@ export default async function DashboardPage() {
       </section>
 
       {/* Recent Transactions */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface-container-low rounded-lg p-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-surface-container-low rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-headline font-bold text-on-surface">
               Transaksi Terbaru
@@ -297,7 +297,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Active Projects */}
-        <div className="bg-surface-container-low rounded-lg p-6">
+        <div className="bg-surface-container-low rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-headline font-bold text-on-surface">
               Proyek Aktif
@@ -333,7 +333,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Footer */}
-      <footer className="mt-12 px-4 py-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
+      <footer className="mt-8 sm:mt-12 px-2 sm:px-4 py-6 sm:py-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
           <div className="w-6 h-6 border border-primary/40 rounded-full flex items-center justify-center">
             <div className="w-2 h-2 bg-primary rounded-full" />
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
             AXA Project - Sovereign Ledger
           </p>
         </div>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
           <span className="text-[10px] text-zinc-600 uppercase tracking-[0.2em]">
             Keamanan Terjamin
           </span>
@@ -355,10 +355,10 @@ export default async function DashboardPage() {
       {/* FAB */}
       <Link
         href="/projects/new"
-        className="fixed bottom-8 right-8 w-14 h-14 gold-gradient rounded-full shadow-[0_8px_32px_rgba(241,201,125,0.3)] flex items-center justify-center active:scale-90 transition-transform z-50 group"
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 w-12 h-12 sm:w-14 sm:h-14 gold-gradient rounded-full shadow-[0_8px_32px_rgba(241,201,125,0.3)] flex items-center justify-center active:scale-90 transition-transform z-50 group"
       >
-        <Plus className="w-6 h-6 text-on-primary" />
-        <span className="absolute right-full mr-4 bg-surface-container-highest text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+        <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-on-primary" />
+        <span className="hidden lg:block absolute right-full mr-4 bg-surface-container-highest text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
           Buat Proyek Baru
         </span>
       </Link>

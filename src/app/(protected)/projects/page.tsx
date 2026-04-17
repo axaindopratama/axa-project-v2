@@ -111,17 +111,17 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <Skeleton className="h-9 w-32 mb-2" />
             <Skeleton className="h-5 w-48" />
           </div>
           <Skeleton className="h-12 w-40" />
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Skeleton className="h-12 flex-1 max-w-md" />
-          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-full sm:w-24" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -134,7 +134,7 @@ export default function ProjectsPage() {
 
   if (error) {
     return (
-      <div className="p-10 pt-24 space-y-8">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
         <ErrorState 
           message={error} 
           action={{ label: "Coba Lagi", onClick: fetchProjects }} 
@@ -144,11 +144,11 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="p-10 pt-24 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             Projects
           </h1>
           <p className="text-zinc-500 mt-1">
@@ -157,7 +157,7 @@ export default function ProjectsPage() {
         </div>
         <Link 
           href="/projects/new"
-          className="gold-gradient px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
+          className="gold-gradient w-full sm:w-auto px-4 sm:px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           New Project
@@ -165,8 +165,8 @@ export default function ProjectsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input 
             type="text" 
@@ -176,7 +176,7 @@ export default function ProjectsPage() {
             className="w-full bg-surface-container-low border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors w-full sm:w-auto">
           <Filter className="w-4 h-4" />
           Filter
         </button>
@@ -196,7 +196,7 @@ export default function ProjectsPage() {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-surface-container-low p-6 rounded-lg group hover:bg-surface-container-high transition-all duration-300"
+              className="bg-surface-container-low p-4 sm:p-6 rounded-lg group hover:bg-surface-container-high transition-all duration-300"
             >
               <Link href={`/projects/${project.id}`}>
                 <div className="flex justify-between items-start mb-4">
@@ -204,7 +204,7 @@ export default function ProjectsPage() {
                     <span className="text-primary font-headline font-black text-2xl">
                       {project.number}
                     </span>
-                    <h3 className="text-xl font-headline font-bold text-on-surface mt-2">
+                    <h3 className="text-lg sm:text-xl font-headline font-bold text-on-surface mt-2 break-words">
                       {project.name}
                     </h3>
                   </div>

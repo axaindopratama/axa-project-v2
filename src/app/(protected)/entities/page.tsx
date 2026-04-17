@@ -30,25 +30,25 @@ async function EntitiesList() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {vendors.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Building2 className="w-5 h-5 text-zinc-500" />
-            <h2 className="text-lg font-headline font-bold text-on-surface">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500" />
+            <h2 className="text-base sm:text-lg font-headline font-bold text-on-surface">
               Vendors ({vendors.length})
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {vendors.map((entity) => (
               <Link
                 key={entity.id}
                 href={`/entities/${entity.id}`}
-                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+                className="bg-surface-container-low p-4 sm:p-5 rounded-lg group hover:bg-surface-container-high transition-all"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                    <h3 className="text-base sm:text-lg font-headline font-bold text-on-surface break-words">
                       {entity.name}
                     </h3>
                     {entity.contact && (
@@ -57,8 +57,8 @@ async function EntitiesList() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
                 </div>
-                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                  {entity.email && <span>{entity.email}</span>}
+                <div className="mt-4 flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs text-zinc-500">
+                  {entity.email && <span className="break-all">{entity.email}</span>}
                   {entity.phone && <span>{entity.phone}</span>}
                 </div>
               </Link>
@@ -69,22 +69,22 @@ async function EntitiesList() {
 
       {clients.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5 text-zinc-500" />
-            <h2 className="text-lg font-headline font-bold text-on-surface">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500" />
+            <h2 className="text-base sm:text-lg font-headline font-bold text-on-surface">
               Clients ({clients.length})
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {clients.map((entity) => (
               <Link
                 key={entity.id}
                 href={`/entities/${entity.id}`}
-                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+                className="bg-surface-container-low p-4 sm:p-5 rounded-lg group hover:bg-surface-container-high transition-all"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                    <h3 className="text-base sm:text-lg font-headline font-bold text-on-surface break-words">
                       {entity.name}
                     </h3>
                     {entity.contact && (
@@ -93,8 +93,8 @@ async function EntitiesList() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
                 </div>
-                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                  {entity.email && <span>{entity.email}</span>}
+                <div className="mt-4 flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs text-zinc-500">
+                  {entity.email && <span className="break-all">{entity.email}</span>}
                   {entity.phone && <span>{entity.phone}</span>}
                 </div>
               </Link>
@@ -105,22 +105,22 @@ async function EntitiesList() {
 
       {employees.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <UserCircle className="w-5 h-5 text-zinc-500" />
-            <h2 className="text-lg font-headline font-bold text-on-surface">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500" />
+            <h2 className="text-base sm:text-lg font-headline font-bold text-on-surface">
               Employees ({employees.length})
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {employees.map((entity) => (
               <Link
                 key={entity.id}
                 href={`/entities/${entity.id}`}
-                className="bg-surface-container-low p-5 rounded-lg group hover:bg-surface-container-high transition-all"
+                className="bg-surface-container-low p-4 sm:p-5 rounded-lg group hover:bg-surface-container-high transition-all"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-headline font-bold text-on-surface">
+                    <h3 className="text-base sm:text-lg font-headline font-bold text-on-surface break-words">
                       {entity.name}
                     </h3>
                     {entity.contact && (
@@ -129,8 +129,8 @@ async function EntitiesList() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-primary transition-colors" />
                 </div>
-                <div className="mt-4 flex gap-4 text-xs text-zinc-500">
-                  {entity.email && <span>{entity.email}</span>}
+                <div className="mt-4 flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs text-zinc-500">
+                  {entity.email && <span className="break-all">{entity.email}</span>}
                   {entity.phone && <span>{entity.phone}</span>}
                 </div>
               </Link>
@@ -144,7 +144,7 @@ async function EntitiesList() {
 
 function EntitiesLoading() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {Array.from({ length: 6 }).map((_, i) => (
         <SkeletonCard key={i} />
       ))}
@@ -154,10 +154,10 @@ function EntitiesLoading() {
 
 export default function EntitiesPage() {
   return (
-    <div className="p-10 pt-24 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             Entities
           </h1>
           <p className="text-zinc-500 mt-1">
@@ -166,15 +166,15 @@ export default function EntitiesPage() {
         </div>
         <Link 
           href="/entities/new"
-          className="gold-gradient px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
+          className="gold-gradient w-full sm:w-auto justify-center px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
           New Entity
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 sm:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input 
             type="text" 
@@ -182,7 +182,7 @@ export default function EntitiesPage() {
             className="w-full bg-surface-container-low border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors">
+        <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors">
           <Filter className="w-4 h-4" />
           Filter
         </button>

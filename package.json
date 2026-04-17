@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
+    "dev:wifi": "next dev -H 0.0.0.0 -p 3000",
+    "dev:wifi:3001": "next dev -H 0.0.0.0 -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

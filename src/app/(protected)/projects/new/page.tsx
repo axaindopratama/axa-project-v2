@@ -58,13 +58,13 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="p-10 pt-24 max-w-2xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Link href="/projects" className="p-2 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors">
           <ArrowLeft className="w-5 h-5 text-zinc-400" />
         </Link>
-        <h1 className="text-3xl font-headline font-bold text-on-surface">
+        <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
           New Project
         </h1>
       </div>
@@ -141,7 +141,7 @@ export default function NewProjectPage() {
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-400 uppercase tracking-widest">
               Start Date
@@ -167,7 +167,7 @@ export default function NewProjectPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex gap-4 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-4">
           <Link
             href="/projects"
             className="flex-1 px-6 py-3 bg-surface-container-low rounded-lg text-zinc-300 text-center font-medium hover:bg-surface-container-high transition-colors"

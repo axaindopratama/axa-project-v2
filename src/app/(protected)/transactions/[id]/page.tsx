@@ -55,7 +55,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   
   if (!transaction) {
     return (
-      <div className="p-10 pt-24">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24">
         <p className="text-zinc-500">Transaction not found</p>
       </div>
     );
@@ -66,14 +66,14 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   const items = await getTransactionItems(id);
 
   return (
-    <div className="p-10 pt-24 space-y-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4">
           <Link href="/transactions" className="p-2 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors">
             <ArrowLeft className="w-5 h-5 text-zinc-400" />
           </Link>
           <div>
-            <h1 className="text-3xl font-headline font-bold text-on-surface">
+            <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
               Transaction Details
             </h1>
             <p className="text-zinc-500 mt-1">
@@ -83,7 +83,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
         </div>
         <Link 
           href={`/transactions/${id}/edit`}
-          className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
+          className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:bg-surface-container-high transition-colors"
         >
           <Edit className="w-4 h-4" />
           Edit
@@ -92,7 +92,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
               Transaction Items
             </h2>
@@ -101,8 +101,8 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             ) : (
               <div className="space-y-3">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-3 bg-surface-container-high rounded-lg">
-                    <div>
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-surface-container-high rounded-lg">
+                    <div className="min-w-0">
                       <span className="text-zinc-300">{item.description}</span>
                       <span className="text-zinc-500 text-sm ml-2">x{item.qty}</span>
                     </div>
@@ -116,7 +116,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
           </div>
 
           {transaction.notes && (
-            <div className="bg-surface-container-low p-6 rounded-lg">
+            <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
               <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
                 Notes
               </h2>
@@ -126,17 +126,17 @@ export default async function TransactionDetailPage({ params }: { params: Promis
         </div>
 
         <div className="space-y-6">
-          <div className="bg-surface-container-low p-6 rounded-lg">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
             <h2 className="text-lg font-headline font-bold text-on-surface mb-4">
               Amount
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-start sm:items-center gap-3">
               {transaction.type === 'income' ? (
                 <ArrowUpRight className="w-8 h-8 text-emerald-500" />
               ) : (
                 <ArrowDownRight className="w-8 h-8 text-red-500" />
               )}
-              <span className={`text-3xl font-headline font-bold ${
+              <span className={`text-2xl sm:text-3xl font-headline font-bold break-words ${
                 transaction.type === 'income' ? 'text-emerald-500' : 'text-red-500'
               }`}>
                 {transaction.type === 'income' ? '+' : '-'} {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(transaction.amount)}
@@ -144,7 +144,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             </div>
           </div>
 
-          <div className="bg-surface-container-low p-6 rounded-lg space-y-4">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg space-y-4">
             <div>
               <span className="text-xs uppercase font-bold tracking-widest text-zinc-500">Type</span>
               <p className={`font-headline font-bold capitalize ${

@@ -215,18 +215,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 flex items-center justify-center">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!project) {
-    return <div className="p-10 pt-24">Project not found</div>;
+    return <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24">Project not found</div>;
   }
 
   return (
-    <div className="p-10 pt-24 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
       {/* Breadcrumb */}
       <div className="flex items-center space-x-2 text-xs uppercase tracking-widest">
         <Link href="/projects" className="text-zinc-500 hover:text-primary">Projects</Link>
@@ -235,13 +235,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4">
           <Link href="/projects" className="p-2 bg-surface-container-low rounded-lg hover:bg-surface-container-high transition-colors">
             <ArrowLeft className="w-5 h-5 text-zinc-400" />
           </Link>
           <div>
-            <h1 className="text-3xl font-headline font-bold text-on-surface">
+            <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface break-words">
               {project.number} - {project.name}
             </h1>
             <span className={`inline-block mt-2 px-3 py-1 text-xs uppercase font-bold tracking-widest rounded ${
@@ -255,23 +255,23 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </span>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full sm:w-auto">
           <Link 
             href={`/projects/${projectId}/invoice`}
-            className="flex items-center gap-2 px-4 py-2 gold-gradient text-on-primary rounded-lg font-headline font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all"
+            className="justify-center flex items-center gap-2 px-4 py-2 gold-gradient text-on-primary rounded-lg font-headline font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all"
           >
             Invoice
           </Link>
           <Link 
             href={`/projects/${projectId}/edit`}
-            className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-primary hover:bg-surface-container-high transition-colors"
+            className="justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-primary hover:bg-surface-container-high transition-colors"
           >
             <Edit className="w-4 h-4" />
             Edit
           </Link>
           <button 
             onClick={() => setShowDeleteProjectModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+            className="justify-center flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-zinc-300 hover:text-red-500 hover:bg-red-500/10 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
             Hapus
@@ -280,33 +280,33 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-surface-container-low p-6 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
           <p className="text-zinc-500 text-xs uppercase tracking-widest mb-2">Total Budget</p>
           <p className="text-2xl font-headline font-bold text-primary">
             {formatCurrency(project.budget)}
           </p>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-lg">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
           <p className="text-zinc-500 text-xs uppercase tracking-widest mb-2">Total Spent</p>
           <p className="text-2xl font-headline font-bold text-on-surface">
             {formatCurrency(totalSpent)}
           </p>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-lg">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
           <p className="text-zinc-500 text-xs uppercase tracking-widest mb-2">Remaining</p>
           <p className="text-2xl font-headline font-bold text-emerald-500">
             {formatCurrency(project.budget - totalSpent)}
           </p>
         </div>
-        <div className="bg-surface-container-low p-6 rounded-lg">
+        <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
           <p className="text-zinc-500 text-xs uppercase tracking-widest mb-2">Budget Usage</p>
           <p className="text-2xl font-headline font-bold text-on-surface">{budgetUsedPercent}%</p>
         </div>
       </div>
 
       {/* Budget Progress */}
-      <div className="bg-surface-container-low p-6 rounded-lg">
+      <div className="bg-surface-container-low p-4 sm:p-6 rounded-lg">
         <div className="flex justify-between mb-3">
           <span className="text-zinc-400 text-sm">Budget Progress</span>
           <span className="text-primary text-sm font-bold">{budgetUsedPercent}%</span>
@@ -321,7 +321,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Tasks */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-headline font-bold text-on-surface">Tasks</h2>
           <button 
             onClick={() => {
@@ -339,8 +339,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <p className="text-zinc-500 py-4">Belum ada task</p>
           ) : (
             tasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
-                <div className="flex items-center gap-4">
+              <div key={task.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-surface-container-low rounded-lg">
+                <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
                   <button
                     onClick={() => handleToggleTaskStatus(task)}
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
@@ -349,7 +349,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                   >
                     {task.status === 'done' && <Check className="w-3 h-3 text-white" />}
                   </button>
-                  <div>
+                  <div className="min-w-0">
                     <span className={`text-zinc-300 ${task.status === 'done' ? 'line-through' : ''}`}>
                       {task.title}
                     </span>
@@ -371,7 +371,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                   <span className="text-zinc-500 text-sm">
                     {formatCurrency(task.estCost)}
                   </span>
@@ -396,8 +396,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Task Modal */}
       {showTaskModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-headline font-bold text-on-surface">
                 Tambah Task
@@ -421,7 +421,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold uppercase tracking-widest text-zinc-400 mb-2">
                     Prioritas
@@ -478,7 +478,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <div className="flex gap-4 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 mt-6">
               <button
                 onClick={() => setShowTaskModal(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"
@@ -499,8 +499,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Delete Task Modal */}
       {showDeleteTaskModal && selectedTask && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -513,7 +513,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <p className="text-zinc-300 mb-6">
               Apakah Anda yakin ingin menghapus task <span className="font-bold text-primary">{selectedTask.title}</span>?
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => setShowDeleteTaskModal(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 font-headline font-bold"
@@ -534,8 +534,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Delete Project Modal */}
       {showDeleteProjectModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-container-low p-6 rounded-xl max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+          <div className="bg-surface-container-low p-4 sm:p-6 rounded-t-xl sm:rounded-xl max-w-md w-full mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-500" />
@@ -548,7 +548,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <p className="text-zinc-300 mb-6">
               Apakah Anda yakin ingin menghapus proyek <span className="font-bold text-primary">{project?.number} - {project?.name}</span>? Semua data terkait (transactions, tasks) juga akan dihapus.
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               <button
                 onClick={() => setShowDeleteProjectModal(false)}
                 className="flex-1 py-3 bg-surface-container-high rounded-lg text-zinc-400 hover:bg-surface-container-highest transition-colors font-headline font-bold"

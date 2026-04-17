@@ -69,25 +69,25 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
   const totalAmount = transactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   if (loading) {
-    return <div className="p-10 pt-24 text-center">Memuat invoice...</div>;
+    return <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 text-center">Memuat invoice...</div>;
   }
 
   if (!project) {
-    return <div className="p-10 pt-24 text-center text-red-500">Proyek tidak ditemukan</div>;
+    return <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 text-center text-red-500">Proyek tidak ditemukan</div>;
   }
 
   return (
-    <div className="p-10 pt-24 min-h-screen bg-zinc-950">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 min-h-screen bg-zinc-950">
       <div className="max-w-4xl mx-auto">
         {/* Controls - Hidden during print */}
-        <div className="flex justify-between items-center mb-8 print:hidden">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8 print:hidden">
           <Link href={`/projects/${projectId}`} className="flex items-center gap-2 text-zinc-400 hover:text-primary transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Kembali ke Proyek
           </Link>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-4 py-2 gold-gradient text-on-primary rounded-lg font-headline font-bold text-sm uppercase tracking-widest hover:shadow-lg transition-all"
+            className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2 gold-gradient text-on-primary rounded-lg font-headline font-bold text-sm uppercase tracking-widest hover:shadow-lg transition-all"
           >
             <Printer className="w-4 h-4" />
             Cetak / PDF

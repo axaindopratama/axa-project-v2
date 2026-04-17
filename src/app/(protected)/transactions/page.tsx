@@ -179,15 +179,15 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="p-10 pt-24 space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <Skeleton className="h-9 w-32 mb-2" />
             <Skeleton className="h-5 w-48" />
           </div>
           <Skeleton className="h-12 w-40" />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-surface-container-low p-4 rounded-lg">
               <Skeleton className="h-4 w-24 mb-2" />
@@ -195,12 +195,13 @@ export default function TransactionsPage() {
             </div>
           ))}
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <Skeleton className="h-12 flex-1 max-w-md" />
-          <Skeleton className="h-12 w-24" />
+          <Skeleton className="h-12 w-full sm:w-24" />
         </div>
         <div className="bg-surface-container-low rounded-lg overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px]">
             <thead>
               <tr className="border-b border-surface-container-highest">
                 <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Date</th>
@@ -218,6 +219,7 @@ export default function TransactionsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     );
@@ -225,7 +227,7 @@ export default function TransactionsPage() {
 
   if (error) {
     return (
-      <div className="p-10 pt-24 space-y-8">
+      <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
         <ErrorState 
           message={error} 
           action={{ label: "Coba Lagi", onClick: fetchTransactions }} 
@@ -235,10 +237,10 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="p-10 pt-24 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-10 pt-20 sm:pt-24 space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-on-surface">
+          <h1 className="text-2xl sm:text-3xl font-headline font-bold text-on-surface">
             Transactions
           </h1>
           <p className="text-zinc-500 mt-1">
@@ -247,14 +249,14 @@ export default function TransactionsPage() {
         </div>
         <Link 
           href="/transactions/new"
-          className="gold-gradient px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center gap-2"
+          className="gold-gradient w-full sm:w-auto px-4 sm:px-6 py-3 rounded-lg font-headline font-bold text-sm uppercase tracking-widest text-on-primary hover:shadow-lg transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           New Transaction
         </Link>
       </div>
 
-      <div className="flex gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-surface-container-low p-4 rounded-lg flex-1">
           <div className="flex items-center gap-2 mb-1">
             <ArrowUpRight className="w-4 h-4 text-emerald-500" />
@@ -283,8 +285,8 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input 
             type="text" 
@@ -294,7 +296,7 @@ export default function TransactionsPage() {
             className="w-full bg-surface-container-low border-none text-zinc-300 py-3 pl-12 pr-4 rounded-lg focus:ring-2 focus:ring-primary/40"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors">
+        <button className="flex items-center justify-center gap-2 px-4 py-3 bg-surface-container-low rounded-lg text-zinc-400 hover:text-zinc-300 transition-colors w-full sm:w-auto">
           <Filter className="w-4 h-4" />
           Filter
         </button>
@@ -308,7 +310,8 @@ export default function TransactionsPage() {
         )
       ) : (
         <div className="bg-surface-container-low rounded-lg overflow-hidden">
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[860px]">
             <thead>
               <tr className="border-b border-surface-container-highest">
                 <th className="text-left text-xs uppercase font-bold tracking-widest text-zinc-500 p-4">Date</th>
@@ -361,6 +364,7 @@ export default function TransactionsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
