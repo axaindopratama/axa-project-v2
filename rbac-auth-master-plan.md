@@ -208,3 +208,5 @@ Plan dianggap selesai jika:
 6. Phase 5 (observability + runbook)
 
 Urutan ini meminimalkan risiko production regression sambil menjaga delivery bertahap.
+
+Buat dan submit ke github issue untuk tahapan phase implementasi
